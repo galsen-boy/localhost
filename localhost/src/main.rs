@@ -1,8 +1,8 @@
 mod debug;
 use debug:: {
-  try_recreate_file_according_to_value_of_debug_boolean,
+  // try_recreate_file_according_to_value_of_debug_boolean,
   create_something_in_uploads_folder,
-  DEBUG_FILE,
+  // DEBUG_FILE,
 };
 
 pub mod server{
@@ -71,14 +71,14 @@ pub async fn get_zero_path() -> Result<PathBuf, Box<dyn Error>>{
 async fn main() {
   
   match create_something_in_uploads_folder().await{
-    Ok(_) => println!("\"something\" created in uploads folder"),
+    Ok(_) =>  {  },
     Err(e) => panic!("ERROR: \"something\" creation failed: {}", e),
   };
 
-  match try_recreate_file_according_to_value_of_debug_boolean().await{
-    Ok(_) => println!("Debug file \"{}\" recreated", DEBUG_FILE),
-    Err(e) => panic!("ERROR: Debug file recreation failed: {}", e),
-  }
+  // match try_recreate_file_according_to_value_of_debug_boolean().await{
+  //   Ok(_) =>  {  },
+  //   Err(e) => panic!("ERROR: Debug file recreation failed: {}", e),
+  // }
   
   // manage settings, cgi and so on
   let zero_path_buf = match get_zero_path().await{
@@ -127,11 +127,11 @@ async fn main() {
           };
           
           match add_static_files_to_server_configs(&mut server_configs).await{
-            Ok(_) => println!("static files added to server configs, with method GET"),
+            Ok(_) =>  { },
             Err(e) => panic!("ERROR: Failed to add static files to server configs: {}", e),
           };
           
-          println!("{:#?}", server_configs); //todo: remove this dev print
+          // println!("{:#?}", server_configs); //todo: remove this dev print
           match run( zero_path_buf.clone() ,server_configs.clone()).await{
             Ok(_) => println!("Server run successfully"),
             Err(e) => panic!("ERROR: Failed to run server: {}", e),

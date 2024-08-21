@@ -30,7 +30,7 @@ impl ServerConfig {
   
   /// drop out all ports not in 0..65535 range, also drop out all repeating of ports
   fn check_ports(&mut self){
-    let old_ports = self.ports.clone();
+    let _old_ports = self.ports.clone();
     let mut ports: HashSet<String> = HashSet::new();
     for port in self.ports.iter(){
       let port: u16 = match port.parse(){
@@ -43,9 +43,9 @@ impl ServerConfig {
       ports.insert(port.to_string());
     }
     self.ports = ports.into_iter().collect();
-    if self.ports.len() != old_ports.len(){
-      println!("=== Config \"{}\" ports changed ===\nfrom {:?}\n  to {:?}", self.server_name, old_ports, self.ports);
-    }
+    // if self.ports.len() != old_ports.len(){
+    //   println!("=== Config \"{}\" ports changed ===\nfrom {:?}\n  to {:?}", self.server_name, old_ports, self.ports);
+    // }
     
   }
   

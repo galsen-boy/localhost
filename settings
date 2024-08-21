@@ -2,7 +2,7 @@
 
 [[servers]]
 server_name = "default"
-ports = ["8082", "8082"]
+ports = ["8081","8082", "8082"]
 server_address = "127.0.0.1"
 client_body_size = 1024
 static_files_prefix = "default"
@@ -23,7 +23,7 @@ uploads_methods = []
 routes = {}
 
 [[servers]]
-server_name = "mega.company"
+server_name = "zone01.student"
 ports = ["8080", "8083", "8084", "8085", "8086"]
 server_address = "127.0.0.2"
 client_body_size = 2048000
@@ -34,7 +34,7 @@ uploads_methods = ["GET","POST","DELETE"]
 routes = { "redirect.html" = ["GET", "POST", "DELETE"] }
 
 [[servers]]
-server_name = "micro.company"
+server_name = "zone01.bocal"
 ports = ["8082", "8083", "8084", "8085","8089"]
 server_address = "127.0.0.2"
 client_body_size = 2048000

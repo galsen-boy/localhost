@@ -27,7 +27,7 @@ pub async fn add_static_files_to_server_configs(server_configs: &mut Vec<ServerC
         Err(e) => panic!("Failed to strip prefix: {} from file path: {} | {}", static_files_prefix, file_path.display(), e),
       };
       
-      println!("add \"{}\"", relative_file_path.to_string_lossy().trim_start_matches(&static_files_prefix));
+      // println!("add \"{}\"", relative_file_path.to_string_lossy().trim_start_matches(&static_files_prefix));
       
       // add the route to the server config, with method GET
       let key = match relative_file_path.to_str(){
