@@ -23,23 +23,23 @@ pub async fn read_unchunked(
   
   append_to_file(&format!("\nstream: {:?}\ninside read body", stream)).await;
   
-  // Start the timer for body read
-  let start_time = Instant::now();
+  // Démarrer le chronomètre pour la lecture du corps
+    let start_time = Instant::now();
   
   if content_length > client_body_size {
-    eprintln!("ERROR: Content-Length header value is greater than client_body_size limit: {} > {}", content_length, client_body_size);
+    // eprintln!("ERROR: Content-Length header value is greater than client_body_size limit: {} > {}", content_length, client_body_size);
     *global_error_string = ERROR_413_BODY_SIZE_LIMIT.to_string();
     return
   }
   
   loop{
-    // async time sleep for 2 ms, for some append_to_file() prints cases binded to time.
-    // with big body can easily break the reading timeouts. So, use carefully.
+   // Pause asynchrone de 2 ms, pour certains cas d'impression avec append_to_file() liés au temps.
+// Avec un corps volumineux, cela peut facilement provoquer des dépassements de délai de lecture. À utiliser avec prudence.
     if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
     
-    // Check if the timeout has expired
+    // verifie le temps d'expiration
     if start_time.elapsed() >= timeout {
-      eprintln!("ERROR: Body read timed out");
+      // eprintln!("ERROR: Body read timed out");
       append_to_file("ERROR: Body read timed out").await;
       *global_error_string = ERROR_400_BODY_READ_TIMEOUT.to_string();
       return 
@@ -50,28 +50,25 @@ pub async fn read_unchunked(
     
     let mut buf = [0; 1024];
     
-    // Read from the stream one byte at a time
+// Lire depuis le flux un octet à la fois
     match stream.read(&mut buf).await {
       Ok(0) => {
         append_to_file("read EOF reached. Read unchunked body size").await;
         return
       },
       Ok(n) => {
-        // Successfully read n bytes from stream
-        // println!("attempt to read {} bytes from stream", n);
+        // Lecture réussie de n octets depuis le flux
+        // println!("tentative de lecture de {} octets depuis le flux", n);
         body_buffer.extend_from_slice(&buf[..n]);
-        // println!("after read body buffer size: {}", body_buffer.len());
-        // println!("after read body buffer: {:?}", body_buffer);
-        // println!("after read body buffer to string: {:?}", String::from_utf8(body_buffer.clone()));
         
-        // check the body_buffer length
+// Vérifier la longueur du body_buffer
         if body_buffer.len() > content_length{
-          eprintln!("ERROR: body_buffer.len() > content_length");
+          // eprintln!("ERROR: body_buffer.len() > content_length");
           *global_error_string = ERROR_400_BODY_BUFFER_LENGHT_IS_BIGGER_THAN_CONTENT_LENGTH.to_string();
           return 
         }
         
-        // Check if the end of the stream has been reached
+// Vérifier si la fin du flux a été atteinte
         if n < buf.len() {
           append_to_file("read EOF reached relatively, because buffer not full after read").await;
           return
@@ -83,9 +80,9 @@ pub async fn read_unchunked(
         // Stream is not ready yet, try again later
         continue;
       },
-      Err(e) => {
+      Err(_e) => {
         // Other error occurred
-        eprintln!("ERROR: Reading body from stream: {}", e);
+        // eprintln!("ERROR: Reading body from stream: {}", e);
         *global_error_string = ERROR_400_BODY_READING_STREAM.to_string();
         return
       },

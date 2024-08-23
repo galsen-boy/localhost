@@ -137,9 +137,13 @@ async fn main() {
             Err(e) => panic!("ERROR: Failed to run server: {}", e),
           };
         },
-        Err(e) => eprintln!("ERROR: Failed to use settings to fill server_configs:Vec<ServerConfig> : {}", e),
+        Err(_e) =>{
+          //  eprintln!("ERROR: Failed to use settings to fill server_configs:Vec<ServerConfig> : {}", e)
+      },
       }
     }
-    Err(e) => eprintln!("ERROR: Failed to build settings: {}", e),
+    Err(_e) => {
+    // eprintln!("ERROR: Failed to build settings: {}", e),
+    }
   }
 }

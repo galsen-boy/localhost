@@ -11,7 +11,7 @@ use crate::{server::core::Server, debug::append_to_file};
 pub struct Cookie {
   pub name: String,
   pub value: String,
-  /// expiration time in seconds from UNIX_EPOCH
+/// Temps d'expiration en secondes depuis l'UNIX_EPOCH
   pub expires: u64,
 }
 
@@ -46,8 +46,8 @@ impl Server {
     let expires = match
     expiration.duration_since(SystemTime::UNIX_EPOCH){
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to get duration_since for cookie name {}: {}", name, e);
+      Err(_e) => {
+        // eprintln!("ERROR: Failed to get duration_since for cookie name {}: {}", name, e);
         Duration::new(0, 0)
       }
     }
@@ -79,16 +79,16 @@ impl Server {
       },
       None => {
         drop(guard_cookies);
-        eprintln!("ERROR: Failed to get cookie by name: {}", name);
+        // eprintln!("ERROR: Failed to get cookie by name: {}", name);
         return Cookie { name: String::new(), value: String::new(), expires: 0}
       },
     };
     
   }
   
-  /// extract cookies from request, if cookie not found, then generate new cookie for one minute.
-  /// 
-  /// Also return bool. False if cookie recognized as bad, for bad request response
+/// Extraire les cookies de la requête. Si le cookie n'est pas trouvé, générer un nouveau cookie pour une minute.
+/// 
+/// Retourner également un booléen. False si le cookie est reconnu comme invalide, pour une réponse de requête incorrecte.
   pub async fn extract_cookies_from_request_or_provide_new(
     &mut self,
     request: &Request<Vec<u8>>
@@ -100,7 +100,7 @@ impl Server {
         append_to_file(&format!( "Cookie header value: {:?}", v )).await;
         v
       },
-      None =>{ // no cookie header, new cookie will be generated
+      None =>{ // Pas d'en-tête de cookie, un nouveau cookie sera généré
         append_to_file("No \"Cookie\" header").await;
         let cookie = self.generate_unique_cookie_and_return().await;
         append_to_file(&format!( "New cookie: {:?}", cookie )).await;
@@ -110,16 +110,16 @@ impl Server {
     
     let cookie_header_value_str = match cookie_header_value.to_str(){
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to get cookie_header.to_str: {}", e);
+      Err(_e) => {
+        // eprintln!("ERROR: Failed to get cookie_header.to_str: {}", e);
         let cookie = self.generate_unique_cookie_and_return().await;
         return (self.send_cookie(cookie.name).await, false)
       }
     }
     .trim();
     
-    // split cookie header by "; " to get all cookie parts, like "name=value" or "name" for flags.
-    let cookie_parts:Vec<&str> = cookie_header_value_str.split("; ").collect();
+// Diviser l'en-tête de cookie par "; " pour obtenir toutes les parties du cookie, comme "name=value" ou "name" pour les indicateurs.
+  let cookie_parts:Vec<&str> = cookie_header_value_str.split("; ").collect();
     let cookie_parts:Vec<&str> = cookie_parts.iter().map(|v| v.trim()).collect();
     
     append_to_file(
@@ -131,11 +131,11 @@ impl Server {
     ).await;
     
     
-    // check all cookie parts, try to find them in server.cookies
-    // if cookie not found, then generate new cookie for one minute
-    // if cookie found, then check if it expired, if yes, then remove it from server.cookies and generate new cookie for one minute and return it as value for header
-    // if cookie not expired, then return it as value for header
-    // if found more then one cookie in server.cookies, then generate new cookie for one minute and return it as value for header
+// Vérifier toutes les parties du cookie, essayer de les trouver dans server.cookies
+// Si le cookie n'est pas trouvé, générer un nouveau cookie pour une minute
+// Si le cookie est trouvé, vérifier s'il a expiré. Si oui, le retirer de server.cookies, générer un nouveau cookie pour une minute et le retourner comme valeur pour l'en-tête
+// Si le cookie n'est pas expiré, le retourner comme valeur pour l'en-tête
+// S'il y a plus d'un cookie trouvé dans server.cookies, générer un nouveau cookie pour une minute et le retourner comme valeur pour l'en-tête
     let mut cookie_found = false;
     let mut broken_cookie_found = false;
     let mut expired_cookie_found = false;
@@ -152,19 +152,19 @@ impl Server {
         if cookie_found { more_then_one_cookie_found = true; }
         cookie_found = true;
         
-        // check if cookie is correct
+        // verifie si le cookie est correct
         if cookie_part.len() == 2 {
           let part_value = cookie_part[1];
           if part_value != server_cookie.value{
-            eprintln!("ERROR: Cookie\n{}\nfound in server cookies with different value\n{}\n. Potential security risk", cookie_part.join("="), server_cookie.to_string().await);
+            // eprintln!("ERROR: Cookie\n{}\nfound in server cookies with different value\n{}\n. Potential security risk", cookie_part.join("="), server_cookie.to_string().await);
             broken_cookie_found = true;
           } else if !more_then_one_cookie_found { // first cookie found, use it
             found_cookie_name = part_name.to_string();
           }
         }
         
-        // check if server cookie with the same name is expired
-        if server_cookie.is_expired().await{
+// Vérifier si le cookie du serveur avec le même nom est expiré
+  if server_cookie.is_expired().await{
           expired_cookie_found = true;
           guard_cookies.remove(part_name);
         }
@@ -180,7 +180,7 @@ impl Server {
       let cookie = self.generate_unique_cookie_and_return().await;
       return (self.send_cookie(cookie.name).await, true)
     } else if broken_cookie_found {
-      eprintln!("ERROR: Found broken cookie. Same name as server cookie, but different value. Potential security risk");
+      // eprintln!("ERROR: Found broken cookie. Same name as server cookie, but different value. Potential security risk");
       let cookie = self.generate_unique_cookie_and_return().await;
       return (self.send_cookie(cookie.name).await, false)
     } else {
@@ -189,15 +189,16 @@ impl Server {
     
   }
   
-  /// get cookie by name, if cookie not found, then generate new cookie for one minute
-  /// 
-  /// return header value for cookie as string "{}={}; Expires={}; HttpOnly; Path=/" to send in response
+  /// Obtenir le cookie par son nom. Si le cookie n'est pas trouvé, générer un nouveau cookie pour une minute
+ //
+/// Retourner la valeur de l'en-tête du cookie sous forme de chaîne "{}={}; Expires={}; HttpOnly; Path=/" à envoyer dans la réponse
+
   pub async fn send_cookie(&mut self, name: String) -> String {
     let guard_cookies = self.cookies.lock().await;
     
     if let Some(cookie) = guard_cookies.get(&name){
       return cookie.to_string().await;
-    } else { // if cookie not found, then generate new cookie for one minute
+    } else { // Si le cookie n'est pas trouvé, générer un nouveau cookie pour une minute
       drop(guard_cookies);
       let cookie = self.generate_unique_cookie_and_return().await;
       return cookie.to_string().await;
@@ -205,13 +206,13 @@ impl Server {
     
   }
   
-  /// remove all expired cookies. Used with timeout 60 sec, to not check every request
-  pub async fn check_expired_cookies(&mut self){
+/// Supprimer tous les cookies expirés. Utilisé avec un délai de 60 secondes, pour ne pas vérifier à chaque requête
+pub async fn check_expired_cookies(&mut self){
     let now = SystemTime::now();
     if now > self.cookies_check_time {
       let guard_cookies = self.cookies.lock().await;
       
-      // collect all expired cookies
+      // Recueillir tous les cookies expirés
       let mut expired_cookies = Vec::new();
       for (name, cookie) in guard_cookies.iter(){
         let expiration = SystemTime::UNIX_EPOCH + Duration::from_secs(cookie.expires);
@@ -222,16 +223,16 @@ impl Server {
       }
       drop(guard_cookies);
       
-      // rediclare as mutable, and perhaps, allow, in pause time, 
-      // to use it in different place. Not sure
+     // Redéclarer comme mutable, et peut-être, permettre, pendant le temps de pause,
+    // de l'utiliser à un autre endroit. Pas sûr
       let mut guard_cookies = self.cookies.lock().await;
-      // remove all expired cookies
+      // supprime tous les cookies expires
       for name in expired_cookies.iter(){ guard_cookies.remove(name); }
       drop(guard_cookies);
       
     }
-    // set next check time, one minute from now
-    self.cookies_check_time = now + Duration::from_secs(60);
+// Définir le prochain temps de vérification, une minute à partir de maintenant
+  self.cookies_check_time = now + Duration::from_secs(60);
     
   }
   

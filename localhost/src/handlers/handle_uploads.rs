@@ -11,39 +11,38 @@ use crate::server::core::ServerConfig;
 use crate::stream::errors::{ERROR_200_OK, ERROR_400_BAD_REQUEST};
 use crate::stream::errors:: ERROR_400_HEADERS_FAILED_TO_PARSE;
 use crate::stream::errors::ERROR_400_HEADERS_KEY_NOT_FOUND;
+#[allow(unused_assignments)]
 
 
-/// handle uploads requests.
+/// gérer les requêtes de téléchargement.
 /// 
-/// The task requires to implement the uploads requests handling.
+/// La tâche consiste à mettre en œuvre le traitement des requêtes de téléchargement.
 /// 
-/// Method GET, POST, DELETE are allowed for
+/// Les méthodes GET, POST et DELETE sont autorisées pour
 /// 
-/// GET - to get the generated in code dynamic html page, includes
-/// the list of files in uploads folder, with [Delete] button to send DELETE request,
-/// and [Upload] button, with form to upload new file
+/// GET - obtenir la page HTML dynamique générée par le code, incluant
+/// la liste des fichiers dans le dossier de téléchargements, avec un bouton [DELETE] pour envoyer une requête DELETE,
+/// et un bouton [UPLOAD], avec un formulaire pour télécharger un nouveau fichier.
 /// 
-/// POST - to upload new file, using form from previous GET request
+/// POST - pour télécharger un nouveau fichier, en utilisant le formulaire de la requête GET précédente.
 /// 
-/// DELETE - to delete the file, using form from previous GET request.
-/// Press [Delete] button, to send the DELETE request to server.
+/// DELETE - pour supprimer le fichier, en utilisant le formulaire de la requête GET précédente.
+/// Appuyez sur le bouton [DELETE] pour envoyer la requête DELETE au serveur.
+
 pub async fn handle_uploads(
   request: &Request<Vec<u8>>,
   cookie_value:String,
   zero_path_buf: &PathBuf,
   server_config: ServerConfig,
 ) -> Response<Vec<u8>>{
-  // todo: refactor path check to os separator instead of hardcoding of / ... probably
-  
   let mut path = request.uri().path();
-  // cut first slash
   if path.starts_with("/"){ path = &path[1..]; }
   
   let absolute_path = zero_path_buf.join("uploads");
   
   if !absolute_path.is_dir().await {
     
-    eprintln!("ERROR: absolute_path {:?} is not a folder.\nThe file structure was damaged after the server started.", absolute_path);
+    // eprintln!("ERROR: absolute_path {:?} is not a folder.\nThe file structure was damaged after the server started.", absolute_path);
     
     return custom_response_500(
       request,
@@ -53,14 +52,14 @@ pub async fn handle_uploads(
     ).await
   }
   
-  // methods allowed for this path, according to task, GET, POST, DELETE
+// Méthodes autorisées pour ce chemin, selon la tâche : GET, POST, DELETE
   let allowed_methods:Vec<String> = vec![
   "GET".to_string(),
   "POST".to_string(),
   "DELETE".to_string(),
   ];
   
-  // check if method is allowed for this path or return 405
+  // Vérifiez si la méthode est autorisée pour ce chemin ou renvoyez un code 405
   let request_method_string = request.method().to_string();
   if !allowed_methods.contains(&request_method_string){
     eprintln!("ERROR: Method {} is not allowed for uploads", request_method_string);
@@ -72,7 +71,7 @@ pub async fn handle_uploads(
       http::StatusCode::METHOD_NOT_ALLOWED,
     ).await
   } else if !server_config.uploads_methods.contains(&request_method_string){
-    eprintln!("ERROR: Method {} is not allowed for uploads in server_config", request_method_string);
+    // eprintln!("ERROR: Method {} is not allowed for uploads in server_config", request_method_string);
     return custom_response_4xx(
       request,
       cookie_value,
@@ -86,13 +85,13 @@ pub async fn handle_uploads(
   let mut body_content:Vec<u8> = Vec::new();
   
   match request_method_string.as_str(){
-    "GET" => { /* do nothing unique. The html page is generated below */ },
+    "GET" => { /* Ne rien faire de spécifique. La page HTML est générée ci-dessous */},
     "POST" => {
       
       match upload_the_file_into_uploads_folder(request, &absolute_path).await.as_str(){
-        ERROR_200_OK => {/* do nothing. file uploaded successfully */},
+        ERROR_200_OK => { },
         ERROR_400_HEADERS_KEY_NOT_FOUND => {
-          eprintln!("ERROR: Header \"X-File-Name\" not found in request");
+          // eprintln!("ERROR: Header \"X-File-Name\" not found in request");
           return custom_response_4xx(
             request,
             cookie_value,
@@ -102,7 +101,7 @@ pub async fn handle_uploads(
           ).await
         },
         ERROR_400_HEADERS_FAILED_TO_PARSE => {
-          eprintln!("ERROR: Failed to parse header_value into file_name");
+          // eprintln!("ERROR: Failed to parse header_value into file_name");
           return custom_response_4xx(
             request,
             cookie_value,
@@ -112,7 +111,7 @@ pub async fn handle_uploads(
           ).await
         },
         _ => {
-          eprintln!("ERROR: Failed to upload the file into uploads folder");
+          // eprintln!("ERROR: Failed to upload the file into uploads folder");
           return custom_response_500(
             request,
             cookie_value,
@@ -125,9 +124,9 @@ pub async fn handle_uploads(
     },
     "DELETE" => {
       match delete_the_file_from_uploads_folder(request, &absolute_path).await.as_str(){
-        ERROR_200_OK => {/* do nothing. file deleted successfully */},
+        ERROR_200_OK => {  },
         ERROR_400_BAD_REQUEST => {
-          eprintln!("ERROR: Failed to parse body into file_name");
+          // eprintln!("ERROR: Failed to parse body into file_name");
           return custom_response_4xx(
             request,
             cookie_value,
@@ -137,7 +136,7 @@ pub async fn handle_uploads(
           ).await
         },
         _ => {
-          eprintln!("ERROR: Failed to delete the file from uploads folder");
+          // eprintln!("ERROR: Failed to delete the file from uploads folder");
           return custom_response_500(
             request,
             cookie_value,
@@ -148,7 +147,7 @@ pub async fn handle_uploads(
       };
     },
     _ => {
-      eprintln!("ERROR: Method {} is not implemented for path {}.\nShould never fire, because checked above!!!", request_method_string, path);
+      // eprintln!("ERROR: Method {} is not implemented for path {}.\nShould never fire, because checked above!!!", request_method_string, path);
       return custom_response_500(
         request,
         cookie_value,
@@ -158,10 +157,10 @@ pub async fn handle_uploads(
     },
   }
   
-  // generate html page with list of files in uploads folder
+// Générer la page HTML avec la liste des fichiers dans le dossier de téléchargements
   let (html, status) = generate_uploads_html( &absolute_path, ).await;
   if status != ERROR_200_OK {
-    eprintln!("ERROR: Failed to generate html page with list of files in uploads folder");
+    // eprintln!("ERROR: Failed to generate html page with list of files in uploads folder");
     return custom_response_500(
       request,
       cookie_value,
@@ -179,8 +178,8 @@ pub async fn handle_uploads(
   .body(body_content)
   {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to create response with body_content: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to create response with body_content: {}", e);
       return custom_response_500(
         request,
         cookie_value.clone(),

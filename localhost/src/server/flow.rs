@@ -29,13 +29,13 @@ pub async fn run(
 
   let ports = match get_usize_unique_ports(&server_configs).await{
     Ok(ports) => ports,
-    Err(e) => {
-      eprintln!("ERROR: Failed to get ports: {}", e);
-      return Err("Failed to get ports".into());
+    Err(_e) => {
+      // eprintln!("ERROR: Échec de l'obtention des ports: {}", e);
+      return Err("Échec de l'obtention des ports".into());
     },
   };
   
-  let server_address = "0.0.0.0"; // to listen all interfaces
+  let server_address = "0.0.0.0"; // pour écouter toutes les interfaces
   
   for port in ports.clone() {
     let addr: SocketAddr = match format!(
@@ -44,17 +44,17 @@ pub async fn run(
       port,
     ).parse(){
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to parse 0.0.0.0:port into SocketAddr: {}", e);
-        return Err("Failed to parse 0.0.0.0:port into SocketAddr".into());
+      Err(_e) => {
+        // eprintln!("ERROR: Échec de l'analyse de 0.0.0.0:port en SocketAddr: {}", e);
+        return Err("Échec de l'analyse de 0.0.0.0:port en SocketAddr".into());
       },
     };
     
     let listener = match TcpListener::bind(addr).await{
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to bind addr: {}", e);
-        return Err("Failed to bind addr".into());
+      Err(_e) => {
+        // eprintln!("ERROR: Échec de la liaison à addr: {}", e);
+        return Err("Échec de la liaison à addr".into());
       },
     };
     
@@ -63,10 +63,10 @@ pub async fn run(
     let zero_path_buf = zero_path_buf.clone();
     let server_configs = server_configs.clone();
     
-    // Create an infinite stream of incoming connections for each port
+    // Créer un flux infini de connexions entrantes pour chaque port
     task::spawn(async move {
 
-      // also can be one for all tasks(move outside), but this looks like more safe/isolated
+      // peut également être un pour toutes les tâches (déplacer à l'extérieur), mais cela semble plus sûr/isolé
       let cookies_storage: Arc<Mutex<HashMap<String, Cookie>>> =
         Arc::new(Mutex::new(HashMap::new()));
       
@@ -74,8 +74,8 @@ pub async fn run(
         
         let mut stream = match stream{
           Ok(v) => v,
-          Err(e) => {
-            eprintln!("ERROR: Failed to get stream: {}", e);
+          Err(_e) => {
+            // eprintln!("ERROR: Échec de l'obtention du flux: {}", e);
             return;
           },
         };
@@ -97,8 +97,8 @@ pub async fn run(
 
         let mut response:Response<Vec<u8>> = Response::new(Vec::new());
         
-        // hardcoded, but it's ok for this case. And less chance for user to break.
-        // Not bad to manage it as flag of executable.
+        // codé en dur, mais c'est correct pour ce cas. Et moins de chances pour l'utilisateur de le casser.
+        // Pas mal de le gérer comme un flag de l'exécutable.
         let timeout = Duration::from_millis(30000);
 
         let choosen_server_config = read_with_timeout(
@@ -141,25 +141,25 @@ pub async fn run(
         
         match write_response_into_stream(&mut stream, response).await{
           Ok(_) => {},
-          Err(e) =>{
-            eprintln!("ERROR: Failed to write response into stream: {}", e);
-            return // to force drop the task stream, just for case. It will exit anyways
+          Err(_e) =>{
+            // eprintln!("ERROR: Échec de l'écriture de la réponse dans le flux: {}", e);
+            return // pour forcer l'arrêt du flux de tâche, juste au cas. Il se fermera de toute façon
           },
         };
         
         match stream.flush().await{
           Ok(_) => {},
-          Err(e) => {
-            eprintln!("ERROR: Failed to flush stream: {}", e);
-            return // to force drop the task stream, just for case. It will exit anyways
+          Err(_e) => {
+            // eprintln!("ERROR: Échec de l'effacement du flux: {}", e);
+            return // pour forcer l'arrêt du flux de tâche, juste au cas. Il se fermera de toute façon
           },
         };
         
         match stream.shutdown(std::net::Shutdown::Both){
           Ok(_) => {},
-          Err(e) => {
-            eprintln!("ERROR: Failed to shutdown stream: {}", e);
-            return // to force drop the task stream, just for case. It will exit anyways
+          Err(_e) => {
+            // eprintln!("ERROR: Échec de l'arrêt du flux: {}", e);
+            return // pour forcer l'arrêt du flux de tâche, juste au cas. Il se fermera de toute façon
           },
         };
         
@@ -167,7 +167,7 @@ pub async fn run(
     });
     
   }
-  println!("Server is listening with configuration ----> http://ip:port pairs");
+  println!("Server Listenning... ( http://localhost:8080 )");
   async_std::task::sleep(Duration::from_secs(u64::MAX)).await;
   Ok(())
 }

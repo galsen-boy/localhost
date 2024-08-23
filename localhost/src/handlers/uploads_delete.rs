@@ -26,13 +26,13 @@ pub async fn delete_the_file_from_uploads_folder(
   }
   
   let file_path = absolute_path.join(file_name);
-  // check if file exists, then delete
-  if file_path.is_file().await {
+// Vérifier si le fichier existe, puis le supprimer
+    if file_path.is_file().await {
     match fs::remove_file(file_path).await{
       Ok(_v) => (),
       Err(_e) => return ERROR_500_INTERNAL_SERVER_ERROR.to_string(),
     };
-    // wait while file system deletes the file
+    // Attendre pendant que le système de fichiers supprime le fichier
     // std::thread::sleep(std::time::Duration::from_millis(1000));
   } else {
     eprintln!("ERROR: No file \"{:?}\" detected", file_path);

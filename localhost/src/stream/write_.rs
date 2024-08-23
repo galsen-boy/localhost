@@ -7,10 +7,10 @@ use crate::stream::write_error::write_critical_error_response_into_stream;
 
 pub async fn write_response_into_stream(stream: &mut TcpStream, response: Response<Vec<u8>>) -> std::io::Result<()> {
   
-  // Break down the response into its parts
+// Décomposer la réponse en ses parties
   let (parts, mut body) = response.into_parts();
   
-  // manage errors
+// Gérer les erreurs
   let mut status: http::StatusCode ;
   match parts.status {
     http::StatusCode::INTERNAL_SERVER_ERROR // 500
@@ -24,8 +24,8 @@ pub async fn write_response_into_stream(stream: &mut TcpStream, response: Respon
     },
     _ => { // force to 200
       status = http::StatusCode::OK;
-      // Also force simplify any other cases to list above,
-      // to satisfy the task requirements, nothing more
+      // Simplifier également tous les autres cas pour les répertorier ci-dessus,
+      // afin de satisfaire les exigences de la tâche, rien de plus
     }
   }
   
@@ -37,14 +37,14 @@ pub async fn write_response_into_stream(stream: &mut TcpStream, response: Respon
     },
   };
   
-  // Format the headers
+  // Formatage des entetes
   let mut headers = String::new();
   for (name, value) in parts.headers.iter(){
     let name = name.as_str();
     let value = match value.to_str(){
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to convert header value to str: {}", e);
+      Err(_e) => {
+        // eprintln!("ERROR: Failed to convert header value to str: {}", e);
         status = http::StatusCode::INTERNAL_SERVER_ERROR;
         reason = "Internal Server Error: incorrect header value".to_string();
         headers.push_str(&format!("{}: {}\r\n", "Content-Type", "text/plain"));
@@ -57,7 +57,7 @@ pub async fn write_response_into_stream(stream: &mut TcpStream, response: Respon
   
   let status_line = format!("HTTP/1.1 {} {}\r\n", status, reason);
   
-  // Write the status line, headers, and body to the stream
+// Écrire la ligne de statut, les en-têtes et le corps dans le flux
   let mut data = Vec::new();
   data.extend_from_slice(status_line.as_bytes());
   data.extend_from_slice(headers.as_bytes());
@@ -66,7 +66,7 @@ pub async fn write_response_into_stream(stream: &mut TcpStream, response: Respon
   match stream.write_all(data.as_slice()).await{
     Ok(_) => {},
     Err(e) => {
-      eprintln!("ERROR: Failed to write response into the stream: {}", e);
+      // eprintln!("ERROR: Failed to write response into the stream: {}", e);
       write_critical_error_response_into_stream(stream,
         http::StatusCode::INTERNAL_SERVER_ERROR,
       ).await;

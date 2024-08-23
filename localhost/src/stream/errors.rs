@@ -51,7 +51,7 @@ pub const ERROR_413_BODY_SIZE_LIMIT: &str =
 
 pub const ERROR_500_INTERNAL_SERVER_ERROR: &str = "[500] INTERNAL SERVER ERROR";
 
-/// array of custom errors for 400 status code. To use in handle
+/// Tableau d'erreurs personnalisées pour le code de statut 400. À utiliser dans handle
 pub const CUSTOM_ERRORS_400: [&str; 30] = [
 ERROR_400_BAD_REQUEST,
 ERROR_400_HEADERS_READ_TIMEOUT,
@@ -85,12 +85,12 @@ ERROR_400_DIRTY_BODY_READ_TIMEOUT,
 ERROR_400_BODY_READING_STREAM,
 ];
 
-/// array of custom errors for 413 status code. To use in handle
+/// Tableau d'erreurs personnalisées pour le code de statut 413. À utiliser dans handle
 pub const CUSTOM_ERRORS_413: [&str; 1] = [
 ERROR_413_BODY_SIZE_LIMIT,
 ];
 
-/// array of custom errors for 500 status code. To use in handle
+/// Tableau d'erreurs personnalisées pour le code de statut 500. À utiliser dans la handle
 pub const CUSTOM_ERRORS_500: [&str; 1] = [
 ERROR_500_INTERNAL_SERVER_ERROR,
 ];

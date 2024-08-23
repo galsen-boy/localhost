@@ -23,10 +23,10 @@ pub async fn upload_the_file_into_uploads_folder(request: &Request<Vec<u8>>, abs
   };
 
   
-  // Sanitize the file name
+// corrige le nom du fichier
   let sanitised_file_name = sanitise( file_name );
   let sanitised_file_name = sanitised_file_name.replace(" ", "_");
-  // Remove double underscores
+  // supprime les tirets du bas
   let sanitised_file_name = sanitised_file_name.replace("__", "_");
   
   let file_path = absolute_path.join(sanitised_file_name);

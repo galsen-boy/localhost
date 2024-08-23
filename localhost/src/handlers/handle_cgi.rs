@@ -7,11 +7,11 @@ use crate::server::core::ServerConfig;
 use crate::handlers::response_500::custom_response_500;
 use crate::handlers::response_4xx::custom_response_4xx;
 
-/// run python script , and check the path is file,folder or not exist/wrong path
+/// exécute le script python, et vérifie si le chemin est un fichier, un dossier ou n'existe pas/chemin incorrect
 /// 
-/// unsafe potentially , because you can pass any path to the script using
+/// potentiellement dangereux, car vous pouvez passer n'importe quel chemin au script en utilisant
 /// 
-/// cgi/useless.py//some/path/here. but in exact this case allow only to check
+/// cgi/useless.py//some/path/here. mais dans ce cas précis, il est seulement permis de vérifier
 pub async fn handle_cgi(
   request: &Request<Vec<u8>>,
   cookie_value:String,
@@ -21,9 +21,9 @@ pub async fn handle_cgi(
   server_config: ServerConfig,
 ) -> Response<Vec<u8>>{
   
-  // check if method is GET or POST or DELETE, or return 405
+  // vérifier si la méthode est GET, POST ou DELETE, sinon retourner 405
   if request.method() != "GET" && request.method() != "POST" && request.method() != "DELETE"{
-    eprintln!("ERROR: Method {} is not allowed for cgi", request.method());
+    // eprintln!("ERROR: Method {} is not allowed for cgi", request.method());
     return custom_response_4xx(
       request,
       cookie_value.clone(),
@@ -35,9 +35,9 @@ pub async fn handle_cgi(
 
   let script_path = "cgi/".to_owned() + &script_file_name;
   
-  // check if script still exist, else return 500, because before server start, we check mandatory files
+  // vérifier si le script existe encore, sinon retourner 500, car avant de démarrer le serveur, nous vérifions les fichiers obligatoires
   if !zero_path_buf.join(&script_path).exists().await{
-    eprintln!("ERROR: script_path {:?} is not exist.\nThe file structure was damaged after the server started.", zero_path_buf.join(&script_path));
+    // eprintln!("ERROR: script_path {:?} is not exist.\nThe file structure was damaged after the server started.", zero_path_buf.join(&script_path));
     return custom_response_500(
       request,
       cookie_value.clone(),
@@ -46,7 +46,7 @@ pub async fn handle_cgi(
     ).await
   }
 
-  // Set the system PATH_INFO or send request path_info into python3 script as argument
+  // Définir le PATH_INFO du système ou envoyer le chemin de la requête comme argument au script python3
   let output = Command::new("python3")
   .arg(script_path)
   .arg(check_file_path)
@@ -69,10 +69,10 @@ pub async fn handle_cgi(
     Err(e) => {
       let error_message = "Failed to get cgi output. ".to_owned() + &e.to_string();
       Box::leak(error_message.into_boxed_str())
-    } // new puzzle. instead of return error as string(instead of coding), fuck your brain for hours , with borrowing/binding/lifetime etc, because it is just can not do this naturally. Rust is crap
+    } // nouvelle énigme. au lieu de retourner l'erreur sous forme de chaîne (au lieu de coder), cassez-vous la tête pendant des heures avec les emprunts/liaisons/vie, car il est tout simplement impossible de le faire naturellement. Rust est nul
   };
   
-  // write to the stream
+  // écrire dans le flux
   let body = format!("Hello from Rust and Python3: {}\n\n", result)
   .as_bytes().to_vec();
   
@@ -83,8 +83,8 @@ pub async fn handle_cgi(
   .body(body)
   {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to build cgi response body | {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to build cgi response body | {}", e);
       return custom_response_500(
         request,
         cookie_value.clone(),

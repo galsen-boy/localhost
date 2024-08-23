@@ -4,7 +4,7 @@ use http::{Response, Request, StatusCode};
 
 use crate::server::core::ServerConfig;
 
-/// last point, if custom error 500 response failed
+/// Dernier point : si la réponse d'erreur personnalisée 500 échoue
 fn hardcoded_response_500(
   cookie_value: String,
 ) -> Response<Vec<u8>>{
@@ -18,8 +18,8 @@ fn hardcoded_response_500(
   .body(body)
   {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to create hardcoded 500 response: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to create hardcoded 500 response: {}", e);
       return Response::new("Fatal Internal Server Error.\nFailed to create hardcoded error 500 response.\nStatus 500 does not set properly".as_bytes().to_vec());
     }
   };
@@ -28,8 +28,8 @@ fn hardcoded_response_500(
 
 }
 
-/// return custom 500 error response.
-/// if error happens, then return hardcoded response with 500 status code
+/// Retourner une réponse d'erreur personnalisée 500.
+/// En cas d'erreur, retourner une réponse codée en dur avec le code de statut 500
 pub async fn custom_response_500(
   _request: &Request<Vec<u8>>,
   cookie_value:String,
@@ -42,11 +42,11 @@ pub async fn custom_response_500(
   .join(server_config.error_pages_prefix.clone())
   .join("500.html");
   
-  // read the error page. if error, then return hardcoded response with 500 status code
-  let error_page_content = match std::fs::read(error_page_path){
+// Lire la page d'erreur. En cas d'erreur, retourner une réponse codée en dur avec le code de statut 500
+let error_page_content = match std::fs::read(error_page_path){
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to read error page: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to read error page: {}", e);
       return hardcoded_response_500(cookie_value)
     }
   };
@@ -58,8 +58,8 @@ pub async fn custom_response_500(
   .body(error_page_content)
   {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to create custom 500 response: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to create custom 500 response: {}", e);
       return hardcoded_response_500(cookie_value.clone())
     }
   };

@@ -2,7 +2,7 @@ use std::str;
 use std::error::Error;
 use http::{Request, Method, Uri, Version, HeaderMap, HeaderValue, HeaderName};
 
-/// Function to parse a raw HTTP request from a Vec<u8> buffer into an http::Request
+/// Fonction pour analyser une requête HTTP brute à partir d'un tampon Vec<u8> en un http::Request
 pub async fn parse_raw_request(
   headers_buffer: Vec<u8>,
   body_buffer: Vec<u8>,
@@ -11,43 +11,42 @@ pub async fn parse_raw_request(
 ) {
   
   if headers_buffer.is_empty() {
-    eprintln!("ERROR: parse_raw_request: headers_buffer is empty");
+    // eprintln!("ERROR: parse_raw_request: headers_buffer is empty");
     *global_error_string = ERROR_400_HEADERS_BUFFER_IS_EMPTY.to_string();
     return;
   }
   
   let headers_string = match String::from_utf8(headers_buffer.clone()){
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to convert headers_buffer to string:\n {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to convert headers_buffer to string:\n {}", e);
       *global_error_string = ERROR_400_HEADERS_BUFFER_TO_STRING.to_string();
       return;
     }
   };
   
-  // Split the request string into lines
-  // let mut lines = request_str.lines(); //todo: never use this crap. it is dead for approach more complex than hello\nworld
-  
-  // separate raw request to ... pieces as vector
+  // Diviser la chaîne de requête en lignes
+ // let mut lines = request_str.lines(); // à faire : ne jamais utiliser cette méthode. Elle est inadaptée pour des approches plus complexes que "hello\nworld"
+// Séparer la requête brute en ... morceaux sous forme de vecteur
   let mut headers_lines: Vec<String> = Vec::new();
   for line in headers_string.split('\n'){
     headers_lines.push(line.to_string());
   }
   
   if headers_lines.is_empty() {
-    eprintln!("ERROR: headers_lines is empty");
+    // eprintln!("ERROR: headers_lines is empty");
     *global_error_string = ERROR_400_HEADERS_LINES_IS_EMPTY.to_string();
     return;
   }
   
-  // Initialize a new HeaderMap to store the HTTP headers
+// Initialiser un nouveau HeaderMap pour stocker les en-têtes HTTP
   let mut headers = HeaderMap::new();
   
-  // Parse the request line, which must be the first one
-  let request_line: String = match headers_lines.get(0) {
+// Analyser la ligne de requête, qui doit être la première
+let request_line: String = match headers_lines.get(0) {
     Some(value) => {value.to_string()},
     None => {
-      eprintln!("ERROR: Failed to get request_line");
+      // eprintln!("ERROR: Failed to get request_line");
       *global_error_string = ERROR_500_INTERNAL_SERVER_ERROR.to_string();
       return;
     },
@@ -55,19 +54,19 @@ pub async fn parse_raw_request(
   
   let (method, uri, version) = match parse_request_line(request_line.clone()).await{
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to parse request_line: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to parse request_line: {}", e);
       *global_error_string = ERROR_400_HEADERS_FAILED_TO_PARSE.to_string();
       return;
     }
   };
   
-  // Parse the headers
+  // Parse les entetes
   for line_index in 1..headers_lines.len() {
     let line: String = match headers_lines.get(line_index){
       Some(value) => {value.to_string()},
       None => {
-        eprintln!("ERROR: Failed to get header line");
+        // eprintln!("ERROR: Failed to get header line");
         *global_error_string = ERROR_500_INTERNAL_SERVER_ERROR.to_string();
         return;
       },
@@ -79,8 +78,8 @@ pub async fn parse_raw_request(
     if parts.len() == 2 {
       let header_name = match HeaderName::from_bytes(parts[0].as_bytes()) {
         Ok(v) => v,
-        Err(e) =>{
-          eprintln!("ERROR: Invalid header name: {}\n {}", parts[0], e);
+        Err(_e) =>{
+          // eprintln!("ERROR: Invalid header name: {}\n {}", parts[0], e);
           *global_error_string = ERROR_400_HEADERS_INVALID_HEADER_NAME.to_string();
           return;
         },
@@ -89,8 +88,8 @@ pub async fn parse_raw_request(
       let value = HeaderValue::from_str( parts[1].trim());
       match value {
         Ok(v) => headers.insert(header_name, v),
-        Err(e) =>{
-          eprintln!("ERROR: Invalid header value: {}\n {}", parts[1], e);
+        Err(_e) =>{
+          // eprintln!("ERROR: Invalid header value: {}\n {}", parts[1], e);
           *global_error_string = ERROR_400_HEADERS_INVALID_HEADER_VALUE.to_string();
           return;
         },
@@ -99,29 +98,29 @@ pub async fn parse_raw_request(
     }
   }
   
-  // Construct the http::Request object
+// Construire l'objet http::Request
   *request = match Request::builder()
   .method(method)
   .uri(uri)
   .version(version)
   .body(body_buffer){
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to construct the http::Request object: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to construct the http::Request object: {}", e);
       *global_error_string = ERROR_500_INTERNAL_SERVER_ERROR.to_string();
       return;
     }
   };
   
-  // try to fill the headers, because in builder it looks like there is no method
-  // to create headers from HeaderMap, but maybe force replacement can be used too
+  // Essayer de remplir les en-têtes, car dans le constructeur, il semble qu'il n'y ait pas de méthode
+// pour créer des en-têtes à partir de HeaderMap, mais peut-être que le remplacement forcé peut également être utilisé
   let request_headers = request.headers_mut();
-  // request_headers.clear();//todo: not safe, maybe some default must present
+// request_headers.clear(); // à faire : pas sûr, peut-être que certains paramètres par défaut doivent être présents
   for (key,value) in headers{
     let header_name = match key {
       Some(v) => v,
       None => {
-        eprintln!("ERROR: Invalid header name");
+        // eprintln!("ERROR: Invalid header name");
         *global_error_string = ERROR_400_HEADERS_INVALID_HEADER_NAME.to_string();
         return;
       },
@@ -135,7 +134,7 @@ pub async fn parse_raw_request(
 use std::str::FromStr;
 
 use crate::{stream::errors::{ERROR_400_HEADERS_INVALID_REQUEST_LINE, ERROR_400_HEADERS_INVALID_METHOD, ERROR_400_HEADERS_INVALID_VERSION, ERROR_400_HEADERS_BUFFER_IS_EMPTY, ERROR_400_HEADERS_BUFFER_TO_STRING, ERROR_400_HEADERS_LINES_IS_EMPTY, ERROR_500_INTERNAL_SERVER_ERROR, ERROR_400_HEADERS_FAILED_TO_PARSE, ERROR_400_HEADERS_INVALID_HEADER_VALUE, ERROR_400_HEADERS_INVALID_HEADER_NAME}, debug::append_to_file};
-/// parse the request line into its components
+/// Parse la ligne de requête en ses composants
 pub async fn parse_request_line(
   request_line: String
 ) -> Result<(Method, Uri, Version), Box<dyn Error>> {
@@ -151,22 +150,22 @@ pub async fn parse_request_line(
   
   let method = match Method::from_str(method){
     Ok(v) => v,
-    Err(e) =>{
-      eprintln!("ERROR: Invalid method: {}\n {}", method, e);
+    Err(_e) =>{
+      // eprintln!("ERROR: Invalid method: {}\n {}", method, e);
       return Err(ERROR_400_HEADERS_INVALID_METHOD.into())
     },
   };
   
   let uri = match Uri::from_str(uri){
     Ok(v) => v,
-    Err(e) =>{
-      eprintln!("ERROR: Invalid uri: {}\n {}", uri, e);
+    Err(_e) =>{
+      // eprintln!("ERROR: Invalid uri: {}\n {}", uri, e);
       return Err(ERROR_400_HEADERS_INVALID_METHOD.into())
     }
   };
   
   if version.to_ascii_uppercase() != "HTTP/1.1" {
-    eprintln!("ERROR: Invalid version: {} . According to task requirements it must be HTTP/1.1 \"It is compatible with HTTP/1.1 protocol.\" ", version);
+    // eprintln!("ERROR: Invalid version: {} . According to task requirements it must be HTTP/1.1 \"It is compatible with HTTP/1.1 protocol.\" ", version);
     return Err(ERROR_400_HEADERS_INVALID_VERSION.into());
   }
   

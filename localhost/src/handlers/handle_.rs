@@ -9,22 +9,23 @@ use crate::handlers::handle_redirected::handle_redirected;
 use crate::handlers::uploads_get::handle_uploads_get_uploaded_file;
 
 
-/// handle all requests.
-/// The cgi requests are handled like separated match case.
-/// The uploads requests are handled separated match case.
+// traiter toutes les demandes.
+// Les demandes CGI sont traitées comme des cas de correspondance séparés.
+// Les demandes de téléchargement sont traitées comme des cas de correspondance séparés.
 pub async fn handle_request(
   request: &Request<Vec<u8>>,
   cookie_value:String,
   zero_path_buf: &PathBuf,
   server_config: ServerConfig,
-  _global_error_string: &mut String, //at the moment not mutated here
+  _global_error_string: &mut String, 
 ) -> Response<Vec<u8>>{
   
-  // try to manage the cgi request case strictly and separately,
-  // to decrease vulnerability, because cgi is old, unsafe and not recommended to use.
-  // Also, the task is low quality, because audit question ask only to check
-  // the cgi with chunked and unchunked requests, so method check is not implemented,
-  // because according to HTTP/1.1 standard, a not POST method can have body too
+// essayer de gérer le cas de la demande CGI de manière stricte et séparée,
+// afin de réduire les vulnérabilités, car CGI est ancien, peu sûr et déconseillé.
+// De plus, la tâche est de faible qualité, car la question de l'audit demande uniquement de vérifier
+// les requêtes CGI avec des requêtes chunkées et non chunkées, donc la vérification des méthodes n'est pas implémentée,
+// car selon la norme HTTP/1.1, une méthode autre que POST peut aussi avoir un corps.
+
   let path = request.uri().path();
   let parts: Vec<&str> = path.split('/').collect();
   
@@ -68,8 +69,8 @@ pub async fn handle_request(
       ).await
     },
     _ => {
-      // response for other cases
-      handle_all(
+// réponse pour les autres cas
+    handle_all(
         request,
         cookie_value,
         zero_path_buf,

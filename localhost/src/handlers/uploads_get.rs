@@ -26,14 +26,87 @@ pub async fn generate_uploads_html(absolute_path: &PathBuf) -> (String, String) 
   html.push_str(" <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
   html.push_str(" <title>Uploads</title>\n");
   
-  // add styles
+  // add improved styles
   let style = r#"
 <style>
 body {
-  background-color: lightgray;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.5em;
+  color: #2c3e50;
+  margin-bottom: 30px;
+}
+
+a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background-color: #fff;
+  margin-bottom: 10px;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-right: 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+button:hover {
+  background-color: #c0392b;
+}
+
+form {
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+input[type="file"] {
+  margin-bottom: 10px;
+}
+
+input[type="submit"] {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+input[type="submit"]:hover {
+  background-color: #27ae60;
 }
 </style>
-
 "#;
   html.push_str(&style);
   
@@ -50,8 +123,8 @@ body {
   
   let mut entries = match fs::read_dir(absolute_path).await {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to read uploads folder: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to read uploads folder: {}", e);
       return (html, ERROR_500_INTERNAL_SERVER_ERROR.to_string());
     },
   };
@@ -60,8 +133,8 @@ body {
     
     let entry = match entry {
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to read uploads folder entry: {}\nSKIPPED", e);
+      Err(_e) => {
+        // eprintln!("ERROR: Failed to read uploads folder entry: {}\nSKIPPED", e);
         continue;
       }
     };
@@ -72,7 +145,7 @@ body {
       let file_name = match path.file_name() {
         Some(v) => v,
         None => {
-          eprintln!("ERROR: Failed to get file name from path: {:?}\nSKIPPED", path);
+          // eprintln!("ERROR: Failed to get file name from path: {:?}\nSKIPPED", path);
           continue;
         }
       };
@@ -80,13 +153,13 @@ body {
       let file_name_str = match file_name.to_str() {
         Some(v) => v,
         None => {
-          eprintln!("ERROR: Failed to convert file name to str: {:?}\nSKIPPED", file_name);
+          // eprintln!("ERROR: Failed to convert file name to str: {:?}\nSKIPPED", file_name);
           continue;
         }
       };
       
       if bad_file_name(file_name_str) {
-        eprintln!("ERROR: Bad file name \"{}\" inside \"uploads\" folder.\nPotential crappers activity :|,\nor file name was sanitised not properly\nin time of uploading\nSKIPPED\n", file_name_str);
+        // eprintln!("ERROR: Bad file name \"{}\" inside \"uploads\" folder.\nPotential crappers activity :|,\nor file name was sanitised not properly\nin time of uploading\nSKIPPED\n", file_name_str);
         continue;
       }
       if file_name_str == ".gitignore" { continue; }
@@ -222,11 +295,11 @@ body {
 }
 
 
-/// when some file requested from uploads folder,
+/// Lorsqu'un fichier est demandé depuis le dossier de téléchargements,
 /// 
-/// this function manages processing of this request.
+/// cette fonction gère le traitement de cette demande.
 /// 
-/// Managed separately, because the uploads folder is dynamic. Not safe to use.
+/// Géré séparément, car le dossier de téléchargements est dynamique. Pas sûr à utiliser.
 pub async fn handle_uploads_get_uploaded_file(
   request: &Request<Vec<u8>>,
   cookie_value:String,
@@ -234,21 +307,20 @@ pub async fn handle_uploads_get_uploaded_file(
   file_path: String,
   server_config: ServerConfig,
 ) -> Response<Vec<u8>>{
-  // todo: refactor path check to os separator instead of hardcoding of / ... probably
   
-  // analyze path. if path is directory, then return default file, according to server config
+// Analyser le chemin. Si le chemin est un répertoire, retourner le fichier par défaut, selon la configuration du serveur
   let mut path_str = request.uri().path();
-  // cut first slash
+  //enleve le premeier slash s'il debute le path
   if path_str.starts_with("/"){ path_str = &path_str[1..]; }
   
   let absolute_path_buf = zero_path_buf.join("uploads").join(file_path);
   
-  // check if path is directory, then return default file as task requires
-  if path_str.ends_with("/") || absolute_path_buf.is_dir().await {
+// Vérifier si le chemin est un répertoire, puis retourner le fichier par défaut comme l'exige la tâche
+if path_str.ends_with("/") || absolute_path_buf.is_dir().await {
     
-    // implement 403 error check if method is not GET, to satisfy task requirements
-    if request.method().to_string() != "GET" {
-      eprint!("ERROR: Status code 403 FORBIDDEN. CUSTOM IMPLEMENTATION.\nOnly the \"GET\" method is allowed to access the directory.");
+// Implémenter la vérification d'erreur 403 si la méthode n'est pas GET, pour satisfaire les exigences de la tâche
+if request.method().to_string() != "GET" {
+      // eprint!("ERROR: Status code 403 FORBIDDEN. CUSTOM IMPLEMENTATION.\nOnly the \"GET\" method is allowed to access the directory.");
       return custom_response_4xx(
         request,
         cookie_value,
@@ -266,7 +338,7 @@ pub async fn handle_uploads_get_uploaded_file(
     ).await
   } else if !absolute_path_buf.is_file().await {
     
-    eprintln!("ERROR:\n-----------------------------------\nuploads absolute_path IS NOT A FILE \n-----------------------------------"); // todo: remove dev print
+    // eprintln!("ERROR:\n-----------------------------------\nuploads absolute_path IS NOT A FILE \n-----------------------------------"); // todo: remove dev print
     
     return custom_response_4xx(
       request,
@@ -275,15 +347,15 @@ pub async fn handle_uploads_get_uploaded_file(
       server_config,
       StatusCode::NOT_FOUND,
     ).await
-  } // check if file exists or return 404
+  } // verifie si le fichier existe sinon genere une erreur 404
   
-  // only GET method allowed for this path. filtering happens above
+// Seule la méthode GET est autorisée pour ce chemin. Le filtrage se fait plus haut
   let allowed_methods = vec!["GET".to_string()];
   
-  // check if method is allowed for this path or return 405
+// Vérifier si la méthode est autorisée pour ce chemin ou retourner 405
   let request_method_string = request.method().to_string();
   if !allowed_methods.contains(&request_method_string){
-    eprintln!("ERROR: Method {} is not allowed for path {}", request_method_string, path_str);
+    // eprintln!("ERROR: Method {} is not allowed for path {}", request_method_string, path_str);
     return custom_response_4xx(
       request,
       cookie_value,
@@ -293,11 +365,11 @@ pub async fn handle_uploads_get_uploaded_file(
     ).await
   }
   
-  // read the file. if error, then return error 500 response
+// Lire le fichier. En cas d'erreur, retourner une réponse d'erreur 500
   let file_content = match std::fs::read(absolute_path_buf.clone()){
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to read file: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to read file: {}", e);
       return custom_response_500(
         request,
         cookie_value,
@@ -313,8 +385,8 @@ pub async fn handle_uploads_get_uploaded_file(
   .body(file_content)
   {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to create response with file: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to create response with file: {}", e);
       return custom_response_500(
         request,
         cookie_value.clone(),
@@ -324,8 +396,8 @@ pub async fn handle_uploads_get_uploaded_file(
     }
   };
   
-  // get file mime type using mime_guess, or use the text/plain
-  let mime_type = match mime_guess::from_path(absolute_path_buf.clone()).first(){
+// Obtenir le type MIME du fichier en utilisant mime_guess, ou utiliser text/plain
+let mime_type = match mime_guess::from_path(absolute_path_buf.clone()).first(){
     Some(v) => v.to_string(),
     None => "text/plain".to_string(),
   };
@@ -338,8 +410,8 @@ pub async fn handle_uploads_get_uploaded_file(
     "Content-Type",
     match mime_type.parse(){
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to parse mime type: {}", e);
+      Err(_e) => {
+        // eprintln!("ERROR: Failed to parse mime type: {}", e);
         HeaderValue::from_static("text/plain")
       }
     }

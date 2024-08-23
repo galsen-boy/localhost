@@ -29,7 +29,7 @@ pub async fn all_files_exists(server_configs: &Vec<ServerConfig>) -> bool{
     return false
   }
 
-  // check custom error pages required by task
+// vérifier les pages d'erreur personnalisées requises par la tâche
   for server_config in server_configs{
     let error_prefix =
     "static/".to_owned()+&server_config.error_pages_prefix; // error pages path prefix
@@ -40,9 +40,9 @@ pub async fn all_files_exists(server_configs: &Vec<ServerConfig>) -> bool{
       }
     }
 
-    // check default file required by task
+// vérifier le fichier par défaut requis par la tâche
     let static_prefix =
-    "static/".to_owned()+&server_config.static_files_prefix; // static files path prefix
+    "static/".to_owned()+&server_config.static_files_prefix; // préfixe du chemin des fichiers statiques
     if !file_exists( &(static_prefix.to_owned() + "/" + &server_config.default_file)){
       eprintln!("ERROR: Default file {} does not exist", &server_config.default_file);
       return false
@@ -53,7 +53,7 @@ pub async fn all_files_exists(server_configs: &Vec<ServerConfig>) -> bool{
   true
 }
 
-/// check the path file ends with error page name. Only implemented error pages checked.
+// vérifier que le chemin du fichier se termine par le nom de la page d'erreur. Seules les pages d'erreur mises en œuvre sont vérifiées.
 pub fn is_implemented_error_page(path: &str) -> bool{
   for error_page in ERROR_PAGES{
     if path.ends_with(error_page){ return true }
@@ -61,7 +61,7 @@ pub fn is_implemented_error_page(path: &str) -> bool{
   false
 }
 
-/// sanitise + replace spaces to underscores + replace double underscores to single underscore
+// assainir + remplacer les espaces par des underscores + remplacer les doubles underscores par un seul underscore
 pub fn sanitise_file_name(file_name: &str) -> String{
   sanitise( file_name ).replace(" ", "_").replace("__", "_")
 }

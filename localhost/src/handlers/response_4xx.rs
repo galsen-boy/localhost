@@ -8,14 +8,14 @@ use crate::handlers::response_500::custom_response_500;
 const ALLOWED_4XX_STATUS_CODES: [StatusCode; 5] = [
   StatusCode::BAD_REQUEST,
   StatusCode::FORBIDDEN,
-  StatusCode::NOT_FOUND, //managed inside handle_all
-  StatusCode::METHOD_NOT_ALLOWED, //managed inside handle_all
+  StatusCode::NOT_FOUND, // Géré à l'intérieur de handle_all
+  StatusCode::METHOD_NOT_ALLOWED, // Géré à l'intérieur de handle_all
   StatusCode::PAYLOAD_TOO_LARGE,
 ];
-/// return custom 4xx error response.
-/// According to task, the next custom error 4xx are required to handle:
-/// 400,403,404,405,413
-/// if error happens, then return custom_response_500
+/// Retourner une réponse d'erreur 4xx personnalisée.
+/// Selon la tâche, les erreurs 4xx personnalisées suivantes doivent être gérées :
+/// 400, 403, 404, 405, 413
+/// En cas d'erreur, retourner `custom_response_500`
 pub async fn custom_response_4xx(
   request: &Request<Vec<u8>>,
   cookie_value:String,
@@ -24,9 +24,9 @@ pub async fn custom_response_4xx(
   status_code: StatusCode,
 ) -> Response<Vec<u8>>{
 
-  // check status code is in 4xx list 400,403,404,405,413
+  // Vérifier si le code de statut est dans la liste 4xx : 400, 403, 404, 405, 413
   if !ALLOWED_4XX_STATUS_CODES.contains(&status_code){
-    eprintln!("ERROR: Internal Server Error\ncustom_response_4xx: status code {:?}\nis not in 4xx list {:?}", status_code, ALLOWED_4XX_STATUS_CODES);
+    // eprintln!("ERROR: Internal Server Error\ncustom_response_4xx: status code {:?}\nis not in 4xx list {:?}", status_code, ALLOWED_4XX_STATUS_CODES);
     return custom_response_500(
       request,
       cookie_value,
@@ -40,11 +40,11 @@ pub async fn custom_response_4xx(
   .join(server_config.error_pages_prefix.clone())
   .join(status_code.as_str().to_string() + ".html");
   
-  // read the error page. if error, then return custom_response_500
-  let error_page_content = match std::fs::read(error_page_path){
+// Lire la page d'erreur. En cas d'erreur, retourner `custom_response_500`
+let error_page_content = match std::fs::read(error_page_path){
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to read error page: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to read error page: {}", e);
       return custom_response_500(
         request,
         cookie_value,
@@ -61,8 +61,8 @@ pub async fn custom_response_4xx(
   .body(error_page_content)
   {
     Ok(v) => v,
-    Err(e) => {
-      eprintln!("ERROR: Failed to create custom 4xx response: {}", e);
+    Err(_e) => {
+      // eprintln!("ERROR: Failed to create custom 4xx response: {}", e);
       return custom_response_500(
         request,
         cookie_value.clone(),

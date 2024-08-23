@@ -11,9 +11,9 @@ use crate::stream::errors::{ERROR_400_HEADERS_READ_TIMEOUT, ERROR_400_HEADERS_RE
 use crate::stream::read_chunked::read_chunked;
 use crate::stream::read_unchunked::read_unchunked;
 
-/// Read from the stream until timeout or EOF
+/// Lire depuis le flux jusqu'au délai d'attente ou EOF
 /// 
-/// returns a tuple of two vectors: (headers_buffer, body_buffer)
+/// Retourne un tuple de deux vecteurs : (headers_buffer, body_buffer)
 pub async fn read_with_timeout(
   timeout: Duration,
   stream: &mut TcpStream,
@@ -25,51 +25,43 @@ pub async fn read_with_timeout(
 
   append_to_file("\nINSIDE read_with_timeout").await;
   
-  // Start the timer
+  // Demarre le timer
   let start_time = Instant::now();
   
-  // Read from the stream until timeout or EOF
+// Lire depuis le flux jusqu'au délai d'attente ou à la fin du fichier (EOF)
   let mut buf = [0; 1];
   
-  // ------------------------------------
-  // collect request headers section
-  // ------------------------------------
-  
+// Collecter la section des en-têtes de la requête  
   loop {
     
-    // Check if the timeout has expired
+// Vérifier si le délai d'attente a expiré
     if start_time.elapsed() >= timeout {
-      eprintln!("ERROR: Headers read timed out");
+      // eprintln!("ERROR: Headers read timed out");
       *global_error_string = ERROR_400_HEADERS_READ_TIMEOUT.to_string();
       return server_configs[0].clone();
     }
     
     match stream.read(&mut buf).await {
       Ok(0) => {
-        // EOF reached
         append_to_file("read EOF reached").await;
         break;
       },
       Ok(n) => {
-        // Successfully read n bytes from stream
-        // println!("attempt to read {} bytes from stream", n);
-        headers_buffer.extend_from_slice(&buf[..n]);
-        // println!("after read headers buffer size: {}", headers_buffer.len());
-        // println!("after read headers buffer: {:?}", headers_buffer);
-        // println!("after read headers buffer to string: {:?}", String::from_utf8(headers_buffer.clone()));
-        // Check if the end of the stream has been reached
-        if n < buf.len() {
+        // Lecture réussie de n octets depuis le flux
+          headers_buffer.extend_from_slice(&buf[..n]);
+        
+        // Vérifier si la fin du flux a été atteinte
+          if n < buf.len() {
           append_to_file("read EOF reached relatively, because buffer not full after read").await;
           break;
         }
       },
       Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-        // Stream is not ready yet, try again later
-        continue;
+            // Le flux n'est pas encore prêt, réessayez plus tard
+            continue;
       },
-      Err(e) => {
-        // Other error occurred
-        eprintln!("ERROR: Reading headers from stream: {}", e);
+      Err(_e) => {
+        // eprintln!("ERROR: Reading headers from stream: {}", e);
         *global_error_string = ERROR_400_HEADERS_READING_STREAM.to_string();
         return server_configs[0].clone();
       },
@@ -87,19 +79,18 @@ pub async fn read_with_timeout(
     String::from_utf8(headers_buffer.clone())
   )).await;
   
-  // chose the server_config and check the server_config.client_body_size
-  // response 413 error, if body is bigger.
-  // Duplicated fragment of code, because of weird task requirements.
+// Choisir la configuration du serveur et vérifier la taille du corps de la requête (client_body_size) dans server_config
+// Retourner une erreur 413 si le corps est trop volumineux.
+// Fragment de code dupliqué en raison des exigences étranges de la tâche.
   
   let server_config = server_config_from_headers_buffer_or_use_default(
     headers_buffer,
     server_configs.clone()
   ).await;
   
-  // check of the body length, according to server_config.client_body_size.
+// Vérifier la longueur du corps, selon server_config.client_body_size.
   let client_body_size = server_config.client_body_size;
   
-  // not nice
   let dirty_string = String::from_utf8_lossy(&headers_buffer);
   let is_chunked = dirty_string.to_lowercase().contains("transfer-encoding: chunked");
   
@@ -113,11 +104,11 @@ pub async fn read_with_timeout(
   
   let mut content_length = 0;
   
-  if has_content_length_header { // try to parse(update default 0) content_length
+  if has_content_length_header { 
     let index = match dirty_string.to_lowercase().find("content-length: "){
       Some(v) => v,
       None => {
-        eprintln!("ERROR: [500] Failed to find already confirmed content-length header in headers_buffer");
+        // eprintln!("ERROR: [500] Failed to find already confirmed content-length header in headers_buffer");
         *global_error_string = ERROR_500_INTERNAL_SERVER_ERROR.to_string();
         return server_config;
       }
@@ -128,7 +119,7 @@ pub async fn read_with_timeout(
     let end = match dirty_string[start..].find("\r\n"){
       Some(v) => v,
       None => {
-        eprintln!("ERROR: [500] Failed to find the end( \"\\r\\n\" ) of already confirmed content-length header in headers_buffer");
+        // eprintln!("ERROR: [500] Failed to find the end( \"\\r\\n\" ) of already confirmed content-length header in headers_buffer");
         *global_error_string = ERROR_500_INTERNAL_SERVER_ERROR.to_string();
         return server_config;
       }
@@ -136,8 +127,8 @@ pub async fn read_with_timeout(
 
     content_length = match dirty_string[start..start + end].trim().parse(){
       Ok(v) => v,
-      Err(e) => {
-        eprintln!("ERROR: Failed to parse already confirmed content-length header in headers_buffer: \n{}", e);
+      Err(_e) => {
+        // eprintln!("ERROR: Failed to parse already confirmed content-length header in headers_buffer: \n{}", e);
         *global_error_string = ERROR_400_HEADERS_FAILED_TO_PARSE.to_string();
         return server_config;
       }
@@ -150,11 +141,8 @@ pub async fn read_with_timeout(
   append_to_file(&format!("content_length: {}", content_length)).await;
   append_to_file(&format!("====\nstream: {:?}\nbefore dive into read body", stream)).await;
   
-  // ------------------------------------
-  // collect request body section
-  // ------------------------------------
-  
-  if is_chunked {
+// Collecter la section du corps de la requête
+if is_chunked {
     read_chunked(
       stream,
       body_buffer,

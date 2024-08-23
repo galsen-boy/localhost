@@ -23,39 +23,38 @@ pub struct ServerConfig {
 }
 
 impl ServerConfig {
-  /// drop out all ports not in 0..65535 range, also drop out all repeating of ports
+/// Éliminer tous les ports hors de la plage 0..65535, ainsi que les ports répétés
   pub async fn check(&mut self){
     self.check_ports();
   }
   
-  /// drop out all ports not in 0..65535 range, also drop out all repeating of ports
   fn check_ports(&mut self){
-    let _old_ports = self.ports.clone();
+    let old_ports = self.ports.clone();
     let mut ports: HashSet<String> = HashSet::new();
     for port in self.ports.iter(){
       let port: u16 = match port.parse(){
         Ok(v) => v,
-        Err(e) =>{
-          eprintln!("ERROR: Config \"{}\" Failed to parse port: {} into u16", self.server_name, e);
+        Err(_e) =>{
+          // eprintln!("ERROR: Config \"{}\" Failed to parse port: {} into u16", self.server_name, e);
           continue;
         }
       };
       ports.insert(port.to_string());
     }
     self.ports = ports.into_iter().collect();
-    // if self.ports.len() != old_ports.len(){
-    //   println!("=== Config \"{}\" ports changed ===\nfrom {:?}\n  to {:?}", self.server_name, old_ports, self.ports);
-    // }
+    if self.ports.len() != old_ports.len(){
+      println!("===Configuration \"{}\" port changed ===\nfrom {:?}\n  to {:?}", self.server_name, old_ports, self.ports);
+    }
     
   }
   
 }
 
-/// get list of unique ports from server_configs, to use listen 0.0.0.0:port
+/// Obtenir la liste des ports uniques depuis `server_configs`, pour utiliser `listen 0.0.0.0:port`
 /// 
-/// and manage pseudo servers, because the task requires redirection
+/// Et gérer les serveurs pseudo, car la tâche nécessite une redirection
 /// 
-/// if no declared server name in request, so we need to use "default" server
+/// Si aucun nom de serveur déclaré dans la requête, utiliser le serveur "par défaut"
 pub async fn get_usize_unique_ports(server_configs: &Vec<ServerConfig>) -> Result<Vec<usize>, Box<dyn Error>>{
   let mut ports: HashSet<usize> = HashSet::new();
   for server_config in server_configs.iter(){
