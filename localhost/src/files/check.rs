@@ -4,9 +4,7 @@ use sanitise_file_name::sanitise;
 use crate::server::core::ServerConfig;
 
 
-/// relative path from executable folder/level
-/// 
-/// named file_exists , but it checks path, not only files. But used only for files.
+/// Nom du fichier : file_exists, mais il vérifie le chemin, pas seulement les fichiers. Cependant, il est utilisé uniquement pour les fichiers.
 pub fn file_exists(path: &str) -> bool{
   let path = Path::new(path);
     if path.exists() {
@@ -20,12 +18,12 @@ pub fn file_exists(path: &str) -> bool{
 
 pub const ERROR_PAGES: [&str; 6] = ["400.html", "403.html", "404.html", "405.html", "413.html", "500.html"];
 
-/// check relative paths. The parent level is executable folder.
+/// Vérifier les chemins relatifs. Le niveau parent est le dossier de l'exécutable.
 /// 
-/// Just a minimum files check, to prevent server run without files required by task
+/// Vérification minimale des fichiers, pour éviter que le serveur ne se lance sans les fichiers requis par la tâche
 pub async fn all_files_exists(server_configs: &Vec<ServerConfig>) -> bool{
   
-  // check cgi script required by task
+// Vérifier le script CGI requis par la tâche
   if !file_exists("cgi/useless.py"){
     eprintln!("ERROR: Path cgi/useless.py does not exist");
     return false
