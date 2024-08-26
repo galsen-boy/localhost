@@ -46,7 +46,7 @@ routes = { "redirect.html" = [] }
 
 # for testing methods using curl for audit
 [[servers]]
-server_name = "test.methods.big"
+server_name = "test1"
 ports = ["8087"]
 server_address = "127.0.0.2"
 client_body_size = 2048000
@@ -57,7 +57,7 @@ uploads_methods = []
 routes = { "redirect.html" = ["GET", "POST", "DELETE"] }
 
 [[servers]]
-server_name = "test.methods.tiny"
+server_name = "test2"
 ports = ["8088"]
 server_address = "127.0.0.2"
 client_body_size = 11
