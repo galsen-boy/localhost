@@ -21,7 +21,6 @@ error_pages_prefix = "localhost/error"
 uploads_methods = []
 routes = {}
 
-# to call resolve using curl
 [[servers]]
 server_name = "zone01.student"
 ports = ["8082", "8083", "8084", "8085", "8086"]
@@ -44,7 +43,6 @@ error_pages_prefix = "site1/error"
 uploads_methods = []
 routes = { "redirect.html" = [] }
 
-# for testing methods using curl for audit
 [[servers]]
 server_name = "test1"
 ports = ["8087"]
