@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use http::Request;
 use uuid::Uuid;
 
-use crate::{server::core::Server, debug::append_to_file};
+use crate::{server::core::Server};
 
 
 
@@ -55,17 +55,17 @@ impl Server {
     
     let cookie = Cookie { name: name.clone(), value, expires };
     
-    append_to_file(
-      &format!( "===\n self.cookies before insert:\n{:?}\n===", self.cookies )
-    ).await;
+    // append_to_file(
+    //   &format!( "===\n self.cookies before insert:\n{:?}\n===", self.cookies )
+    // ).await;
     
     let mut guard_cookies = self.cookies.lock().await;
     guard_cookies.insert( cookie.name.clone(), cookie.clone() );
     drop(guard_cookies);
     
-    append_to_file(
-      &format!( "===\n self.cookies after insert:\n{:?}\n===", self.cookies )
-    ).await;
+    // append_to_file(
+    //   &format!( "===\n self.cookies after insert:\n{:?}\n===", self.cookies )
+    // ).await;
     
     
     cookie
@@ -94,16 +94,16 @@ impl Server {
     request: &Request<Vec<u8>>
   ) -> (String, bool) {
     
-    append_to_file("EXTRACT COOKIES FROM REQUEST OR PROVIDE NEW").await;
+    // append_to_file("EXTRACT COOKIES FROM REQUEST OR PROVIDE NEW").await;
     let cookie_header_value = match request.headers().get("Cookie"){
       Some(v) =>{
-        append_to_file(&format!( "Cookie header value: {:?}", v )).await;
+        // append_to_file(&format!( "Cookie header value: {:?}", v )).await;
         v
       },
       None =>{ // Pas d'en-tête de cookie, un nouveau cookie sera généré
-        append_to_file("No \"Cookie\" header").await;
+        // append_to_file("No \"Cookie\" header").await;
         let cookie = self.generate_unique_cookie_and_return().await;
-        append_to_file(&format!( "New cookie: {:?}", cookie )).await;
+        // append_to_file(&format!( "New cookie: {:?}", cookie )).await;
         return (self.send_cookie(cookie.name).await, true)
       }
     };
@@ -122,13 +122,13 @@ impl Server {
   let cookie_parts:Vec<&str> = cookie_header_value_str.split("; ").collect();
     let cookie_parts:Vec<&str> = cookie_parts.iter().map(|v| v.trim()).collect();
     
-    append_to_file(
-      &format!( "===\n incoming Cookie parts: {:?}\n===", cookie_parts )
-    ).await;
+    // append_to_file(
+    //   &format!( "===\n incoming Cookie parts: {:?}\n===", cookie_parts )
+    // ).await;
     
-    append_to_file(
-      &format!( "===\n server.cookies: {:?}\n===", self.cookies )
-    ).await;
+    // append_to_file(
+    //   &format!( "===\n server.cookies: {:?}\n===", self.cookies )
+    // ).await;
     
     
 // Vérifier toutes les parties du cookie, essayer de les trouver dans server.cookies
@@ -218,7 +218,7 @@ pub async fn check_expired_cookies(&mut self){
         let expiration = SystemTime::UNIX_EPOCH + Duration::from_secs(cookie.expires);
         if expiration < now {
           expired_cookies.push(name.clone());
-          append_to_file(&format!( "EXPIRED COOKIE: {:?}", cookie )).await;
+          // append_to_file(&format!( "EXPIRED COOKIE: {:?}", cookie )).await;
         }
       }
       drop(guard_cookies);

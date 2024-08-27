@@ -1,6 +1,6 @@
 
 ## Premières étapes:  
--démarrer le serveur : sudo ./runme (dans le cas d'un port privilégié utilisé dans settings ou MacOS) ou ./runme.
+-démarrer le serveur :./runme
 confirmer que le serveur a démarré avec succès.
 -suivre les étapes ci-dessous pour tester le serveur, conformément aux documents d'audit.
 

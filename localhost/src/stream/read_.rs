@@ -4,7 +4,7 @@ use std::io::{self};
 use futures::AsyncReadExt;
 use async_std::net::TcpStream;
 
-use crate::debug::append_to_file;
+// use crate::debug::append_to_file;
 use crate::server::core::ServerConfig;
 use crate::server::find::server_config_from_headers_buffer_or_use_default;
 use crate::stream::errors::{ERROR_400_HEADERS_READ_TIMEOUT, ERROR_400_HEADERS_READING_STREAM, ERROR_400_HEADERS_FAILED_TO_PARSE, ERROR_500_INTERNAL_SERVER_ERROR};
@@ -23,7 +23,7 @@ pub async fn read_with_timeout(
   global_error_string: &mut String,
 ) -> ServerConfig {
 
-  append_to_file("\nINSIDE read_with_timeout").await;
+  // append_to_file("\nINSIDE read_with_timeout").await;
   
   // Demarre le timer
   let start_time = Instant::now();
@@ -43,7 +43,7 @@ pub async fn read_with_timeout(
     
     match stream.read(&mut buf).await {
       Ok(0) => {
-        append_to_file("read EOF reached").await;
+        // append_to_file("read EOF reached").await;
         break;
       },
       Ok(n) => {
@@ -52,7 +52,7 @@ pub async fn read_with_timeout(
         
         // Vérifier si la fin du flux a été atteinte
           if n < buf.len() {
-          append_to_file("read EOF reached relatively, because buffer not full after read").await;
+          // append_to_file("read EOF reached relatively, because buffer not full after read").await;
           break;
         }
       },
@@ -69,15 +69,15 @@ pub async fn read_with_timeout(
     
     
     if headers_buffer.ends_with(b"\r\n\r\n") {
-      append_to_file("HEADERS BUFFER ENDS WITH \\r\\n\\r\\n").await;
+      // append_to_file("HEADERS BUFFER ENDS WITH \\r\\n\\r\\n").await;
       break;
     }
   }
   
-  append_to_file(&format!(
-    "HEADERS_BUFFER_STRING:\n{:?}",
-    String::from_utf8(headers_buffer.clone())
-  )).await;
+  // append_to_file(&format!(
+  //   "HEADERS_BUFFER_STRING:\n{:?}",
+  //   String::from_utf8(headers_buffer.clone())
+  // )).await;
   
 // Choisir la configuration du serveur et vérifier la taille du corps de la requête (client_body_size) dans server_config
 // Retourner une erreur 413 si le corps est trop volumineux.
@@ -98,7 +98,7 @@ pub async fn read_with_timeout(
   dirty_string.to_lowercase().contains("content-length: ");
 
   if !has_content_length_header && !is_chunked {
-    append_to_file(&format!("Neither Content-Length nor Transfer-Encoding: chunked headers found in headers_buffer. Skip body reading.")).await;
+    // append_to_file(&format!("Neither Content-Length nor Transfer-Encoding: chunked headers found in headers_buffer. Skip body reading.")).await;
     return server_config;
   }
   
@@ -136,10 +136,10 @@ pub async fn read_with_timeout(
     
   }
 
-  append_to_file(&format!("is_chunked: {}", is_chunked)).await;
-  append_to_file(&format!("has_content_length_header: {}", has_content_length_header)).await;
-  append_to_file(&format!("content_length: {}", content_length)).await;
-  append_to_file(&format!("====\nstream: {:?}\nbefore dive into read body", stream)).await;
+  // append_to_file(&format!("is_chunked: {}", is_chunked)).await;
+  // append_to_file(&format!("has_content_length_header: {}", has_content_length_header)).await;
+  // append_to_file(&format!("content_length: {}", content_length)).await;
+  // append_to_file(&format!("====\nstream: {:?}\nbefore dive into read body", stream)).await;
   
 // Collecter la section du corps de la requête
 if is_chunked {

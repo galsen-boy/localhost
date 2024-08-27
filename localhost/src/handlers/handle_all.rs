@@ -2,7 +2,7 @@ use async_std::path::PathBuf;
 
 use http::{Response, Request, StatusCode, HeaderValue};
 
-use crate::debug::append_to_file;
+// use crate::debug::append_to_file;
 use crate::files::check::is_implemented_error_page;
 use crate::handlers::response_500::custom_response_500;
 use crate::handlers::response_::{response_default_static_file, force_status};
@@ -164,7 +164,7 @@ let mime_type = match mime_guess::from_path(absolute_path_buf.clone()).first(){
     Some(v) => v.to_string(),
     None => "text/plain".to_string(),
   };
-  append_to_file(&format!("\n-------\n\nmime_type {}\n\n----------\n", mime_type)).await;
+  // append_to_file(&format!("\n-------\n\nmime_type {}\n\n----------\n", mime_type)).await;
   
   response.headers_mut().insert(
     "Content-Type",

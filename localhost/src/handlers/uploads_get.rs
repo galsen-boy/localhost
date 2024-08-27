@@ -4,7 +4,7 @@ use async_std::stream::StreamExt; // for `next`
 
 use http::{Request, Response, StatusCode, HeaderValue};
 
-use crate::debug::append_to_file;
+// use crate::debug::append_to_file;
 use crate::files::check::bad_file_name;
 use crate::handlers::response_::response_default_static_file;
 use crate::handlers::response_4xx::custom_response_4xx;
@@ -402,9 +402,9 @@ let mime_type = match mime_guess::from_path(absolute_path_buf.clone()).first(){
     None => "text/plain".to_string(),
   };
   
-  append_to_file(&format!(
-    "\n-------\n\nmime_type {}\n\n----------\n", mime_type
-  )).await;
+  // append_to_file(&format!(
+  //   "\n-------\n\nmime_type {}\n\n----------\n", mime_type
+  // )).await;
   
   response.headers_mut().insert(
     "Content-Type",

@@ -20,7 +20,7 @@ use crate::stream::errors::{ERROR_200_OK, ERROR_400_HEADERS_INVALID_COOKIE};
 use crate::stream::read_::read_with_timeout;
 use crate::stream::parse::parse_raw_request;
 use crate::stream::write_::write_response_into_stream;
-use crate::debug::append_to_file;
+// use crate::debug::append_to_file;
 
 pub async fn run(
   zero_path_buf:PathBuf,
@@ -58,7 +58,7 @@ pub async fn run(
       },
     };
     
-    append_to_file(&format!("addr {}", addr)).await;
+    // append_to_file(&format!("addr {}", addr)).await;
     
     let zero_path_buf = zero_path_buf.clone();
     let server_configs = server_configs.clone();
@@ -66,7 +66,7 @@ pub async fn run(
     // Créer un flux infini de connexions entrantes pour chaque port
     task::spawn(async move {
 
-      // peut également être un pour toutes les tâches (déplacer à l'extérieur), mais cela semble plus sûr/isolé
+      // peut également être un pour toutes les tâches (déplacer à l'extérieur)
       let cookies_storage: Arc<Mutex<HashMap<String, Cookie>>> =
         Arc::new(Mutex::new(HashMap::new()));
       
@@ -80,9 +80,9 @@ pub async fn run(
           },
         };
         
-        append_to_file(
-          "==================\n= incoming fires =\n=================="
-        ).await;
+        // append_to_file(
+        //   "==================\n= incoming fires =\n=================="
+        // ).await;
         // append_to_file(&format!("{:?}",stream)).await;
         
         let mut server = Server {
@@ -93,7 +93,7 @@ pub async fn run(
         let mut body_buffer: Vec<u8> = Vec::new();
         let mut global_error_string = ERROR_200_OK.to_string();
         
-        append_to_file(&format!( "\nbefore read_with_timeout\nheaders_buffer: {:?}", headers_buffer )).await;
+        // append_to_file(&format!( "\nbefore read_with_timeout\nheaders_buffer: {:?}", headers_buffer )).await;
 
         let mut response:Response<Vec<u8>> = Response::new(Vec::new());
         
@@ -106,21 +106,21 @@ pub async fn run(
           &server_configs, &mut global_error_string
         ).await;
         
-        append_to_file(&format!(
-          "\nafter read_with_timeout\nheaders_buffer_string: {:?}\nbody_buffer_string: {:?}" ,
-          String::from_utf8(headers_buffer.clone()),
-          String::from_utf8(body_buffer.clone())
-        )).await;
+        // append_to_file(&format!(
+        //   "\nafter read_with_timeout\nheaders_buffer_string: {:?}\nbody_buffer_string: {:?}" ,
+        //   String::from_utf8(headers_buffer.clone()),
+        //   String::from_utf8(body_buffer.clone())
+        // )).await;
         
         let mut request = Request::new(Vec::new());
         if global_error_string == ERROR_200_OK.to_string() {
           parse_raw_request(headers_buffer, body_buffer, &mut request, &mut global_error_string).await;
         }
         
-        append_to_file(&format!(
-          "\nafter parse_raw_request\nrequest.headers: {:?}\n" ,
-          request.headers()
-        )).await;
+        // append_to_file(&format!(
+        //   "\nafter parse_raw_request\nrequest.headers: {:?}\n" ,
+        //   request.headers()
+        // )).await;
 
         server.check_expired_cookies().await;
         
@@ -132,10 +132,10 @@ pub async fn run(
           response = handle_request(&request, cookie_value.clone(), &zero_path_buf, choosen_server_config.clone(), &mut global_error_string).await;
         }
 
-        append_to_file(&format!(
-          "\nafter handle_request\nresponse.headers: {:?}\n" ,
-          response.headers()          
-        )).await;
+        // append_to_file(&format!(
+        //   "\nafter handle_request\nresponse.headers: {:?}\n" ,
+        //   response.headers()          
+        // )).await;
         
         check_custom_errors(global_error_string, &request, cookie_value.clone(), &zero_path_buf, choosen_server_config.clone(), &mut response).await;
         
@@ -159,7 +159,7 @@ pub async fn run(
           Ok(_) => {},
           Err(_e) => {
             // eprintln!("ERROR: Échec de l'arrêt du flux: {}", e);
-            return // pour forcer l'arrêt du flux de tâche, juste au cas. Il se fermera de toute façon
+            return // pour forcer l'arrêt du flux de tâche
           },
         };
         

@@ -5,7 +5,7 @@ use async_std::io;
 use async_std::net::TcpStream;
 use futures::AsyncReadExt;
 
-use crate::debug::{append_to_file, DEBUG};
+// use crate::debug::{append_to_file, DEBUG};
 use crate::stream::errors::{ERROR_400_BODY_SUM_CHUNK_SIZE_READ_TIMEOUT, ERROR_400_BODY_SUM_CHUNK_SIZE_READING_STREAM, ERROR_400_BODY_SUM_CHUNK_SIZE_PARSE, ERROR_400_BODY_CHUNKED_BUT_ZERO_SUM_CHUNK_SIZE, ERROR_400_BODY_CHUNK_SIZE_READ_TIMEOUT, ERROR_400_BODY_CHUNK_SIZE_READING_STREAM, ERROR_400_BODY_CHUNK_SIZE_PARSE, ERROR_400_BODY_CHUNK_READ_TIMEOUT, ERROR_400_BODY_CHUNK_READING_STREAM, ERROR_400_BODY_CHUNK_IS_BIGGER_THAN_CHUNK_SIZE, ERROR_413_BODY_SIZE_LIMIT};
 
 
@@ -18,9 +18,9 @@ pub async fn read_chunked(
   global_error_string: &mut String,
 ) {
   
-  append_to_file(
-    "===================\n= CHUNKED REQUEST =\n==================="
-  ).await;
+  // append_to_file(
+  //   "===================\n= CHUNKED REQUEST =\n==================="
+  // ).await;
   
   let start_time = Instant::now();
   
@@ -35,7 +35,7 @@ pub async fn read_chunked(
     
     // sommeil asynchrone de 2 ms, pour certains cas de append_to_file() liés au temps.
     // avec un corps volumineux, les délais de lecture peuvent facilement être dépassés. À utiliser avec précaution.
-    if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
+    // if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
     
     // Vérifier si le délai d'attente a expiré
     if start_time.elapsed() >= timeout {
@@ -49,7 +49,7 @@ pub async fn read_chunked(
     // Lire depuis le flux un octet à la fois
     match stream.read(&mut buf).await {
       Ok(0) => {
-        append_to_file("EOF atteint en lecture. Taille totale des chunks lue").await;
+        // append_to_file("EOF atteint en lecture. Taille totale des chunks lue").await;
         break;
       },
       Ok(n) => { // Lecture réussie de n octets depuis le flux
@@ -67,7 +67,7 @@ pub async fn read_chunked(
         
         // Vérifier si la fin du flux a été atteinte
         if n < buf.len() {
-          append_to_file("EOF atteint relativement.\nBuffer non complet après lecture. Taille totale des chunks lue").await;
+          // append_to_file("EOF atteint relativement.\nBuffer non complet après lecture. Taille totale des chunks lue").await;
           return // à faire : pas évident, probablement
         }
       },
@@ -124,7 +124,7 @@ pub async fn read_chunked(
     
     // sommeil asynchrone de 2 ms, pour certains cas de append_to_file() liés au temps.
     // avec un corps volumineux, les délais de lecture peuvent facilement être dépassés. À utiliser avec précaution.
-    if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
+    // if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
     
     // Vérifier si le délai d'attente a expiré
     if start_time.elapsed() >= timeout {
@@ -139,7 +139,7 @@ pub async fn read_chunked(
     match stream.read(&mut buf).await {
       Ok(0) => {
         // EOF atteint
-        append_to_file("EOF atteint en lecture. Taille du chunk lue").await;
+        // append_to_file("EOF atteint en lecture. Taille du chunk lue").await;
         break;
       },
       Ok(n) => {
@@ -158,7 +158,7 @@ pub async fn read_chunked(
         
         // Vérifier si la fin du flux a été atteinte
         if n < buf.len() {
-          append_to_file("EOF atteint relativement.\nBuffer non complet après lecture. Taille du chunk lue").await;
+          // append_to_file("EOF atteint relativement.\nBuffer non complet après lecture. Taille du chunk lue").await;
           return // à faire : pas évident, probablement
         }
       },
@@ -186,12 +186,12 @@ pub async fn read_chunked(
           return
         }
       };
-      append_to_file(&format!("chunk_size : {}", chunk_size)).await;
+      // append_to_file(&format!("chunk_size : {}", chunk_size)).await;
       
       
       // Vérifier si la fin du flux a été atteinte
       if chunk_size == 0 {
-        append_to_file("EOF atteint pour le corps chunked").await;
+        // append_to_file("EOF atteint pour le corps chunked").await;
         return
       } else { // il y a un chunk à lire, selon chunk_size
         
@@ -199,7 +199,7 @@ pub async fn read_chunked(
           
           // sommeil asynchrone de 2 ms, pour certains cas de append_to_file() liés au temps.
           // avec un corps volumineux, les délais de lecture peuvent facilement être dépassés. À utiliser avec précaution.
-          if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
+          // if DEBUG { async_std::task::sleep(Duration::from_millis(2)).await; }
           
           // Vérifier si le délai d'attente a expiré
           if start_time.elapsed() >= timeout {
@@ -213,7 +213,7 @@ pub async fn read_chunked(
           // Lire depuis le flux un octet à la fois
           match stream.read(&mut buf).await {
             Ok(0) => {
-              append_to_file("EOF atteint en lecture").await;
+              // append_to_file("EOF atteint en lecture").await;
               break;
             },
             Ok(n) => {
@@ -232,7 +232,7 @@ pub async fn read_chunked(
               
               // Vérifier si la fin du flux a été atteinte
               if n < buf.len() {
-                append_to_file("EOF atteint relativement, buffer non complet après lecture. Chunk lu").await;
+                // append_to_file("EOF atteint relativement, buffer non complet après lecture. Chunk lu").await;
                 return // à faire : pas évident, probablement
               }
             },
@@ -252,9 +252,9 @@ pub async fn read_chunked(
           // Vérifier si la fin du chunk a été atteinte
           if chunk_buffer.ends_with(b"\r\n") {
             // Supprimer le CRLF final
-            append_to_file(&format!("avant la troncature de chunk_buffer : {:?}", chunk_buffer)).await;
+            // append_to_file(&format!("avant la troncature de chunk_buffer : {:?}", chunk_buffer)).await;
             chunk_buffer.truncate(chunk_buffer.len() - 2);
-            append_to_file(&format!("chunk_buffer : {:?}", chunk_buffer)).await;
+            // append_to_file(&format!("chunk_buffer : {:?}", chunk_buffer)).await;
             body_buffer.extend(chunk_buffer.clone());
             
             chunk_buffer.clear();
