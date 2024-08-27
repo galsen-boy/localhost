@@ -1,5 +1,4 @@
 
-
 [[servers]]
 server_name = "default"
 ports = ["8082", "8082"]
@@ -13,7 +12,7 @@ routes = { "redirect.html" = [] }
 
 [[servers]]
 server_name = "localhost"
-ports = ["8082"]
+ports = ["8080"]
 server_address = "127.0.0.1"
 client_body_size = 11
 static_files_prefix = "localhost"
@@ -22,9 +21,10 @@ error_pages_prefix = "localhost/error"
 uploads_methods = []
 routes = {}
 
+# to call resolve using curl
 [[servers]]
 server_name = "zone01.student"
-ports = ["8080", "8083", "8084", "8085", "8086"]
+ports = ["8082", "8083", "8084", "8085", "8086"]
 server_address = "127.0.0.2"
 client_body_size = 2048000
 static_files_prefix = "site1"
@@ -35,7 +35,7 @@ routes = { "redirect.html" = ["GET", "POST", "DELETE"] }
 
 [[servers]]
 server_name = "zone01.bocal"
-ports = ["8082", "8083", "8084", "8085","8089"]
+ports = ["8082", "8083", "8084", "8085"]
 server_address = "127.0.0.2"
 client_body_size = 2048000
 static_files_prefix = "site1"
