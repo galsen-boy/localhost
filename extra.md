@@ -1,6 +1,7 @@
 
 ## Premières étapes:  
--démarrer le serveur :./runme
+
+-démarrer le serveur: ./runme
 confirmer que le serveur a démarré avec succès.
 -suivre les étapes ci-dessous pour tester le serveur, conformément aux documents d'audit.
 
@@ -39,10 +40,11 @@ Par exemple un client qui tape www.zone 01.sn, envoie une requête Get au serve
 Le serveur analyse la requête pour déterminer ce que le client demande, ensuite cherche la ressource demandée dans son système de fichier ou sa BD et envoie la réponse au client incluant les en-tête HTTP.
 Et enfin ferme ou maintien la connexion ouverte pour d'autres requêtes.
 
-
 ## Quelle fonction a été utilisée pour le multiplexage d'E/S et comment fonctionne-t-elle ?
 
-Le multiplexage d'E/S est une méthode qui permet à un programme de surveiller plusieurs canaux d'E/S (comme un socket réseau/TcpListener) en même temps. Mis en œuvre à l'aide de la méthode flow.rs ... 
+Le multiplexage d'E/S est une méthode qui permet à un programme de surveiller plusieurs canaux d'E/S (comme un socket réseau/TcpListener) en même temps.
+ Mis en œuvre à l'aide de la méthode flow.rs ... 
+
 ```rust
 
 listener.incoming().for_each_concurrent(None, |stream| async {
@@ -57,7 +59,7 @@ listener.incoming().for_each_concurrent(None, |stream| async {
 ## Le serveur n'utilise-t-il qu'un seul select (ou équivalent) pour lire les requêtes des clients et écrire les réponses ?
 
 
-Le serveur n'utilise pas une seule sélection pour lire les demandes et écrire les réponses. Il utilise un modèle asynchrone où chaque connexion est traitée indépendamment dans sa propre tâche.
+Le serveur n'utilise pas un seul select pour lire les demandes et écrire les réponses. Il utilise un modèle asynchrone où chaque connexion est traitée indépendamment dans sa propre tâche.
 Mise en œuvre équivalente de select. La section flow.rs ... 
 
 ```rust
