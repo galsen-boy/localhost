@@ -83,8 +83,8 @@ La méthode for_each_concurrent est utilisée pour gérer plusieurs connexions d
 ## Lisez le code qui passe du select (ou équivalent) à la lecture et à l'écriture d'un client, n'y a-t-il qu'une seule lecture ou écriture par client par select (ou équivalent) ?
 
 La lecture et l'écriture d'un client se trouvent à l'intérieur de la tâche générée, qui est générée pour chaque connexion. Donc il n'y a qu'une seule lecture ou écriture par client par select (ou équivalent).
-La lecture est mise en œuvre dans la fonction flow.rs ... read_with_timeout.
-L'écriture est mise en œuvre dans la fonction flow.rs ... match write_response_into_stream.
+La lecture est mise en œuvre dans flow.rs ... read_with_timeout.
+L'écriture est mise en œuvre dans flow.rs ... match write_response_into_stream.
 
 ```rust
 let choosen_server_config = read_with_timeout(
