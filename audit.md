@@ -420,7 +420,5 @@ Affiche le résultat suivant :
 "longest_transaction":                  1.28,
 "shortest_transaction":                 0.00
 
-![siege](_extra/siege.png)
-
 
 > Vérifiez qu'il n'y a pas de connexion en suspens. La section `flow.rs ... task::spawn`. La fin de cette section implémente la suppression du client, naturellement, à la fin de la tâche lancée. De plus, le `return` utilisé pour quitter la tâche lancée en cas d'erreurs de l'`écriture`. Après cela, la tâche est supprimée et la connexion est fermée, indépendamment du résultat de la tâche.

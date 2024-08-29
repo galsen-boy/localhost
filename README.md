@@ -47,7 +47,7 @@ Pour satisfaire l'exigence de la description de la tâche
 la démarche suivante a été choisie :
 - le processus de test est manuel
 - les outils utilisés pour les tests sont les utilitaires `curl` et `siege`, ainsi que le navigateur
-- la description de l'audit et des tests se trouve dans le fichier `extra.md` dans le dossier racine du dépôt
-[extra.md](extra.md)
+- la description de l'audit et des tests se trouve dans le fichier `audit.md` dans le dossier racine du dépôt
+[audit.md](audit.md)
 
 ## Auteurs
