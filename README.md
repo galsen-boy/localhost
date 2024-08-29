@@ -5,12 +5,12 @@ Un serveur web Rust, compatible avec le protocole HTTP/1.1, capable d'exécuter 
 - Ouvrez un terminal dans le dossier racine du dépôt (à l'emplacement du fichier `README.md`)
 
 ### Construire le projet :
-- Terminal : `./do`
+- Terminal : `./build`
 
 ### Exécuter le projet :
 - Terminal : `./runme`
 
-### Exécuter le projet en mode développement (build et exécution, ne fonctionne pas avec les ports privilégiés) :
+### Exécuter le projet en mode développement :
 - Terminal : `./devrun`
 
 ## Fonctionnement du serveur :

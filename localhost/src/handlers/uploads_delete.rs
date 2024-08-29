@@ -33,7 +33,7 @@ pub async fn delete_the_file_from_uploads_folder(
       Err(_e) => return ERROR_500_INTERNAL_SERVER_ERROR.to_string(),
     };
     // Attendre pendant que le système de fichiers supprime le fichier
-    // std::thread::sleep(std::time::Duration::from_millis(1000));
+    std::thread::sleep(std::time::Duration::from_millis(1000));
   } else {
     eprintln!("ERROR: No file \"{:?}\" detected", file_path);
   }

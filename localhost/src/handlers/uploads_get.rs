@@ -1,10 +1,9 @@
 use async_std::fs;
 use async_std::path::PathBuf;
-use async_std::stream::StreamExt; // for `next`
+use async_std::stream::StreamExt;
 
 use http::{Request, Response, StatusCode, HeaderValue};
 
-// use crate::debug::append_to_file;
 use crate::files::check::bad_file_name;
 use crate::handlers::response_::response_default_static_file;
 use crate::handlers::response_4xx::custom_response_4xx;
@@ -13,9 +12,10 @@ use crate::server::core::ServerConfig;
 use crate::stream::errors::{ERROR_200_OK, ERROR_500_INTERNAL_SERVER_ERROR};
 
 
-/// html is generated in code. Not templates etc.
+/// Le HTML est généré directement  dans le code. Pas de modèles
 /// 
-/// To decrease dependencies and avoid any extra activities.
+/// Pour diminuer les dépendances et éviter toute activité supplémentaire.
+
 pub async fn generate_uploads_html(absolute_path: &PathBuf) -> (String, String) {
   let mut html = String::new();
   
@@ -26,7 +26,7 @@ pub async fn generate_uploads_html(absolute_path: &PathBuf) -> (String, String) 
   html.push_str(" <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
   html.push_str(" <title>Uploads</title>\n");
   
-  // add improved styles
+  // ajoute des styles
   let style = r#"
 <style>
 body {
@@ -115,10 +115,10 @@ input[type="submit"]:hover {
   
   html.push_str("<h1>Uploads</h1>");
   
-  // add link back to main page
+// ajoute un lien vers la page principale  
   html.push_str("\n<a href=\"/\">Back to main page</a>");
   
-  // list of files
+// liste des fichiers  
   html.push_str("<ul>");
   
   let mut entries = match fs::read_dir(absolute_path).await {
