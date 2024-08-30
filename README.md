@@ -51,3 +51,5 @@ la démarche suivante a été choisie :
 [audit.md](audit.md)
 
 ## Auteurs
+* [Ndiaga Ba](https://learn.zone01dakar.sn/git/ndiba)
+* [Serwade](https://learn.zone01dakar.sn/git/serwade)
