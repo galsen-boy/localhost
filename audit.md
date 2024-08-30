@@ -173,13 +173,17 @@ Le fichier settings. Tout paramètre de configuration error_pages_prefix est obl
 ## Limitez le corps du client (par exemple : curl -X POST -H "Content-Type: plain/text" --data "BODY with something shorter or longer than body limit").
 
 Le fichier settings, configuration avec server_name = "localhost" et client_body_size = 11.
-Commande de test : curl -X POST -H "Content-Type: application/x-www-form-urlencoded" --data-raw $'hello world' http://localhost:8080/cgi/useless.py/useless_file.
+Commande de test : curl -X POST -H "Content-Type: application/x-www-form-urlencoded" --data $hello world http://localhost:8080/cgi/useless.py/useless_file.
+
 Affiche:
 
-  Hello from Rust and Python3: PATH_INFO: /home/user/git/task-localhost
-  The "/home/user/git/task-localhost/cgi/useless_file" is File
+```rust
+  Hello from Rust and Python3: PATH_INFO: /home/student/localhost
+  The "/home/student/localhost/cgi/useless_file" is File
 
-Commande de test : curl -X POST -H "Content-Type: application/x-www-form-urlencoded" --data-raw $'hello big world' http://localhost:8080/cgi/useless.py/useless_file.
+  ```
+
+Commande de test : curl -X POST -H "Content-Type: application/x-www-form-urlencoded" --data $'hello big world' http://localhost:8080/cgi/useless.py/useless_file.
 Affiche le contenu de la page 413.html avec le code d'état 413. La raison est que la taille du corps est supérieure à client_body_size dans les paramètres.
 
 
@@ -371,29 +375,31 @@ ou
 (cas corps chunked) curl -X POST http://localhost:8082/cgi/useless.py/useless_file -H "Transfer-Encoding: chunked" --data-raw $'5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n'
 
 Affiche la sortie :
-    Hello from Rust and Python3: PATH_INFO: /home/user/git/task-localhost
-    The "/home/user/git/task-localhost/cgi/useless_file" is File
+```rust
+    Hello from Rust and Python3: PATH_INFO: /home/student/localhost
+    The "/home/student/localhost/cgi/useless_file" is File
+```
 
     Commande de test : curl -X POST http://localhost:8080/cgi/useless.py/useless_file -H "Transfer-Encoding: chunked" --data-raw $'5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n'
-Affiche le contenu de la page 413.html (Payload Too Large). La raison est que la longueur du corps chunké (25 octets) est supérieure à client_body_size (11) dans la configuration du serveur.
+Affiche le contenu de la page 413.html (Payload Too Large). La raison est que la longueur du corps chunkded (25 octets) est supérieure à client_body_size (11) dans la configuration du serveur.
 Le cgi fonctionne comme prévu, selon l'approche d'implémentation choisie.
 
 
 ## Configurez plusieurs ports et sites Web et assurez-vous que cela fonctionne comme prévu.
 
 Le fichier settings inclut la configuration des plusieurs ports et sites Web.
-Les sites fonctionnent comme prévu (testés dans les sections précédentes).
+Les sites fonctionnent comme prévu.
 
 
 ## Configurez le même port plusieurs fois. Le serveur devrait trouver l'erreur.
 
 La configuration du fichier settings avec server_name = "default" et ports = ["80","8082", "8082"] met en œuvre une tentative de configurer le même port plusieurs fois.
 Lors de l'initialisation du serveur, les ports sont vérifiés et le message suivant est affiché :
-=== Config "default" ports changed ===
-from ["80", "8082", "8082"]
-  to ["8082", "80"]
-
-
+```rust
+=== La configuration de port du server "default" passe ===
+De ["8082", "8082"]
+  à ["8082"]
+  ```
 
   Cela démontre que le serveur a trouvé l'erreur et l'a corrigée.
 

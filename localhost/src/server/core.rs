@@ -29,7 +29,7 @@ impl ServerConfig {
   }
   
   fn check_ports(&mut self){
-    // let old_ports = self.ports.clone();
+    let old_ports = self.ports.clone();
     let mut ports: HashSet<String> = HashSet::new();
     for port in self.ports.iter(){
       let port: u16 = match port.parse(){
@@ -42,9 +42,9 @@ impl ServerConfig {
       ports.insert(port.to_string());
     }
     self.ports = ports.into_iter().collect();
-    // if self.ports.len() != old_ports.len(){
-    //   println!("===Configuration \"{}\" port changed ===\nfrom {:?}\n  to {:?}", self.server_name, old_ports, self.ports);
-    // }
+    if self.ports.len() != old_ports.len(){
+      println!("=== La configuration de port du server \"{}\" passe ===\nDe {:?}\n  à {:?}", self.server_name, old_ports, self.ports);
+    }
     
   }
   
