@@ -428,3 +428,7 @@ Affiche le résultat suivant :
 
 
 > Vérifiez qu'il n'y a pas de connexion en suspens. La section `flow.rs ... task::spawn`. La fin de cette section implémente la suppression du client, naturellement, à la fin de la tâche lancée. De plus, le `return` utilisé pour quitter la tâche lancée en cas d'erreurs de l'`écriture`. Après cela, la tâche est supprimée et la connexion est fermée, indépendamment du résultat de la tâche.
+
+## Auteurs
+* [Ndiaga Ba](https://learn.zone01dakar.sn/git/ndiba)
+* [Serwade](https://learn.zone01dakar.sn/git/serwade)
